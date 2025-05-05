@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_project_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Make the form readonly when in project state -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="readonly">stage == 'project'</attribute>
+            </xpath>
+
+            <!-- Add CSS styles for reusability -->
+            <xpath expr="//sheet" position="before">
+                <style>
+                    .flow-arrow {
+                    font-size: 1.5rem !important;
+                    color: #888 !important;
+                    opacity: 0.7 !important;
+                    }
+                    .card-header-title {
+                    font-weight: bold;
+                    }
+                    .form-label-compact {
+                    white-space: nowrap;
+                    overflow: visible;
+                    }
+                    .department-readonly-message {
+                    text-align: left;
+                    }
+                    .department-message-alert {
+                    margin: 0 0 0.75rem 0 !important;
+                    padding: 0.4rem 1rem !important;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    }
+                    .department-requirement-list {
+                    margin-top: 0.5rem;
+                    }
+                </style>
+            </xpath>
+
+            <!-- Make the main notebook invisible for new projects -->
+            <xpath expr="//notebook" position="attributes">
+                <attribute name="invisible">not id</attribute>
+            </xpath>
+
+            <!-- Add buttons for sale orders in the button box -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_latest_devis" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                        invisible="not current_sale_order_id">
+                    <field name="current_sale_order_id" widget="statinfo" string="Devis"/>
+                </button>
+                <button name="action_view_all_devis" type="object" class="oe_stat_button" icon="fa-list"
+                        invisible="not sale_order_ids">
+                    <field name="sale_order_ids" widget="statinfo" string="Tous les devis"/>
+                </button>
+                <button name="action_view_implementation_project" type="object" class="oe_stat_button" icon="fa-tasks"
+                        invisible="not show_implementation_project_button">
+                    <field name="implementation_project_id" widget="statinfo" string="Projet d'implémentation"/>
+                </button>
+            </xpath>
+
+            <!-- Set placeholder for project name -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="placeholder">Nom du projet</attribute>
+            </xpath>
+
+            <!-- Make original fields invisible -->
+            <xpath expr="//field[@name='label_tasks']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='tag_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Remove original fields to reposition them somewhere else -->
+            <xpath expr="//field[@name='date_start']" position="replace"/>
+            <xpath expr="//field[@name='date']" position="replace"/>
+            <xpath expr="//field[@name='user_id']" position="replace"/>
+            <xpath expr="//field[@name='partner_id']" position="replace"/>
+
+            <!-- Move native fields to settings tab -->
+            <xpath expr="//notebook/page[@name='settings']" position="inside">
+                <group name="task_settings" string="Paramètres des tâches">
+                    <field name="label_tasks" string="Nom des tâches"/>
+                </group>
+            </xpath>
+
+            <!-- Add status bar and buttons at the top -->
+            <xpath expr="//sheet" position="before">
+                <header invisible="not id">
+                    <field name="from_crm" invisible="1"/>
+                    <field name="from_etude_chiffrage" invisible="1"/>
+                    <field name="profiles_workload_valid" invisible="1"/>
+                    <!-- Status bar for projects that require devis steps -->
+                    <field name="stage" widget="statusbar" options="{'clickable': '1'}"
+                           statusbar_visible="preparation,devis_created,devis_validated,project"
+                           invisible="not requires_devis_steps"/>
+                    <!-- Status bar for projects that don't require devis steps -->
+                    <field name="stage" widget="statusbar" options="{'clickable': '1'}"
+                           statusbar_visible="preparation,project"
+                           invisible="requires_devis_steps"/>
+                </header>
+            </xpath>
+
+            <!-- Create a more compact badge in the top right corner -->
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="class">position-relative</attribute>
+            </xpath>
+
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                <div class="position-absolute end-0 top-0 mt-2 me-2">
+                    <span class="badge rounded-pill fs-6 py-1 px-3 bg-primary text-white"
+                          style="color: white !important;"
+                          invisible="project_type != 'etude_chiffrage'">E&amp;C
+                    </span>
+                    <span class="badge rounded-pill fs-6 py-1 px-3 bg-info text-white"
+                          invisible="project_type != 'implementation'">Implémentation
+                    </span>
+                </div>
+            </xpath>
+
+            <!-- Project details at the top of the form -->
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="after">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <group name="project_details">
+                            <field name="partner_id" string="Client" placeholder="Sélectionner un client"
+                                   readonly="(stage == 'project') or (project_type == 'implementation' and from_etude_chiffrage)"
+                                   required="1"/>
+                            <field name="project_type" required="1"
+                                   readonly="from_crm and not from_etude_chiffrage or stage == 'project' or id"
+                                   placeholder="Sélectionner le type de projet"/>
+                            <field name="implementation_category"
+                                   invisible="project_type != 'implementation'"
+                                   required="project_type == 'implementation'"
+                                   readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
+                            <field name="etude_chiffrage_category"
+                                   invisible="project_type != 'etude_chiffrage'"
+                                   required="project_type == 'etude_chiffrage'"
+                                   readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
+                            <field name="department_type"
+                                   invisible="project_type != 'implementation'"
+                                   required="project_type == 'implementation'"
+                                   readonly="is_department_type_readonly"/>
+                            <field name="department_ids" widget="many2many_tags"
+                                   options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
+                                   domain="[('id', 'in', available_department_ids)]"
+                                   readonly="stage == 'project' or (is_evolution_project)"
+                                   placeholder="Sélectionner le(s) département(s)"/>
+                            <field name="tag_ids" string="Étiquettes" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                            <field name="sale_order_ids" string="Tous les devis" widget="many2many_tags" readonly="1"
+                                   options="{'no_create': True, 'no_open': False}"
+                                   invisible="not id or not sale_order_ids"/>
+                        </group>
+                    </div>
+                    <div class="col-md-6">
+                        <group>
+                            <field name="user_id" string="Chef de projet" widget="many2one_avatar_user"
+                                   readonly="stage == 'project'" required="1"/>
+                            <field name="date_start" placeholder="Date de démarrage prévu" required="0" invisible="1"/>
+                            <field name="date" placeholder="Date de fin prévue" required="0" invisible="1"/>
+                        </group>
+                    </div>
+                </div>
+
+                <!-- Project stages information in cards -->
+                <div class="row mt-3 mb-2 justify-content-start" invisible="not id">
+                    <!-- Devis card -->
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3" invisible="not requires_devis_steps">
+                        <div class="card">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <strong class="card-header-title">Devis</strong>
+
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-arrow-right flow-arrow"
+                                       invisible="stage in ['preparation'] or not (stage in ['devis_created', 'devis_validated', 'project'])"
+                                       title="Flèche de progression" aria-label="Flèche de progression"/>
+                                </div>
+                            </div>
+                            <div class="card-body pb-2">
+                                <!-- Generate devis button -->
+                                <div class="text-center"
+                                     invisible="current_sale_order_id or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids) or (not profile_line_ids and profiles_required) or not department_ids or stage != 'preparation'">
+                                    <button name="action_generate_devis" type="object"
+                                            class="btn btn-primary mb-2 w-100"
+                                            string="Générer le devis"/>
+                                </div>
+
+                                <!-- Feedback message: Select departments -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="department_ids">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Sélectionnez au moins un département</span>
+                                </div>
+
+                                <!-- Feedback message: Add requirements -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="not ((custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids)) or stage == 'project'">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Ajoutez des exigences dans l'onglet "Exigences"</span>
+                                </div>
+
+                                <!-- Feedback message: Add profiles -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="profile_line_ids or not profiles_required">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Ajoutez au moins un profil dans l'onglet "Profils"</span>
+                                </div>
+
+                                <!-- Devis information display -->
+                                <div class="mb-2"
+                                     invisible="(stage == 'preparation' and not current_sale_order_id)">
+                                    <div class="mb-2 row" name="row_devis_generated_by">
+                                        <label for="devis_generated_by" class="text-muted col-md-5 form-label-compact">
+                                            Généré par:
+                                        </label>
+                                        <div class="col-md-7">
+                                            <field name="devis_generated_by" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2 row" name="row_devis_generated_date">
+                                        <label for="devis_generated_date"
+                                               class="text-muted col-md-5 form-label-compact">Généré le:
+                                        </label>
+                                        <div class="col-md-7">
+                                            <field name="devis_generated_date" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" name="row_devis_references">
+                                        <label for="current_sale_order_id"
+                                               class="text-muted col-md-5 form-label-compact">Devis:
+                                        </label>
+                                        <div class="col-md-7">
+                                            <field name="current_sale_order_id" readonly="1" nolabel="1"
+                                                   options="{'no_create': True}" widget="many2one_tag"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Devis validation info - only visible when stage is devis_validated or later -->
+                                    <hr class="mt-3 mb-3" invisible="stage in ['preparation', 'devis_created']"/>
+                                    <div invisible="stage in ['preparation', 'devis_created']">
+                                        <div class="mb-2 row" name="row_devis_validated_by">
+                                            <label for="devis_validated_by"
+                                                   class="text-muted col-md-5 form-label-compact">Validé par:
+                                            </label>
+                                            <div class="col-md-7">
+                                                <field name="devis_validated_by" nolabel="1"/>
+                                            </div>
+                                        </div>
+                                        <div class="row" name="row_devis_validated_date">
+                                            <label for="devis_validated_date"
+                                                   class="text-muted col-md-5 form-label-compact">Validé le:
+                                            </label>
+                                            <div class="col-md-7">
+                                                <field name="devis_validated_date" nolabel="1"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status badge for devis -->
+                                <div class="row mb-2" invisible="not current_sale_order_id">
+                                    <div class="text-muted col-md-5 form-label-compact">
+                                        Statut:
+                                    </div>
+                                    <div class="col-md-7">
+                                        <span class="badge rounded-pill bg-success"
+                                              invisible="current_sale_order_state != 'sale'">
+                                            <i class="fa fa-check-circle me-1"></i>Validé
+                                        </span>
+                                        <span class="badge rounded-pill bg-danger"
+                                              invisible="current_sale_order_state != 'cancel'">
+                                            <i class="fa fa-times-circle me-1"></i>Annulé
+                                        </span>
+                                        <span class="badge rounded-pill bg-warning"
+                                              invisible="current_sale_order_state in ['sale', 'cancel']">
+                                            <i class="fa fa-clock-o me-1"></i>En attente de validation
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Cancel devis button -->
+                                <div class="d-flex justify-content-end"
+                                     invisible="not (stage in ['preparation', 'devis_created']) or not current_sale_order_id">
+                                    <button name="action_cancel_devis" type="object"
+                                            class="btn btn-link text-danger p-2"
+                                            string="Annuler le devis"
+                                            confirm="Êtes-vous sûr de vouloir annuler ce devis? Cette action ne peut pas être annulée."/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project card -->
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3"
+                         invisible="(requires_devis_steps and stage in ['preparation', 'devis_created'])">
+                        <div class="card">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <strong class="card-header-title" invisible="project_type != 'etude_chiffrage'">
+                                    Projet étude et chiffrage
+                                </strong>
+                                <strong class="card-header-title" invisible="project_type != 'implementation'">
+                                    Projet implémentation
+                                </strong>
+
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-arrow-right flow-arrow"
+                                       invisible="project_type != 'etude_chiffrage' or not implementation_project_id"
+                                       title="Flèche vers projet d'implémentation"
+                                       aria-label="Flèche vers projet d'implémentation"/>
+                                </div>
+                            </div>
+                            <div class="card-body pb-2">
+                                <!-- Project Dates -->
+                                <div class="row mb-2" name="row_project_dates">
+                                    <label for="date_start" string="Date projet"
+                                           class="text-muted col-md-4 form-label-compact"/>
+                                    <div class="col-md-8">
+                                        <field name="date_start" widget="daterange"
+                                               options='{"end_date_field": "date", "always_range": "1", "start_placeholder": "Date début", "end_placeholder": "Date fin"}'
+                                               required="stage == 'project'"
+                                               readonly="stage == 'project'"
+                                               decoration-warning="is_weekend_date"
+                                               decoration-danger="is_end_date_invalid"
+                                               help="Date de début et de fin prévues pour le projet."/>
+                                        <field name="date" invisible="1" required="date_start"/>
+                                        <field name="is_weekend_date" invisible="1"/>
+                                        <field name="is_end_date_invalid" invisible="1"/>
+                                    </div>
+                                </div>
+
+                                <!-- Feedback message: Select departments (non-devis projects) -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="department_ids or requires_devis_steps or stage != 'preparation'">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Sélectionnez au moins un département</span>
+                                </div>
+
+                                <!-- Feedback message: Add requirements (non-devis projects) -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="not (not requires_devis_steps and stage == 'preparation' and ((custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids))) or stage == 'project'">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Ajoutez des exigences dans l'onglet "Exigences"</span>
+                                </div>
+
+                                <!-- Feedback message: Add profiles (non-devis projects) -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="profile_line_ids or not profiles_required or requires_devis_steps or stage != 'preparation'">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Ajoutez au moins un profil dans l'onglet "Profils"</span>
+                                </div>
+
+                                <!-- Feedback message: Set project start date -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="(date_start and date and not is_end_date_invalid) or (requires_devis_steps and stage != 'devis_validated') or (not requires_devis_steps and stage != 'preparation') or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids) or (not profile_line_ids and profiles_required) or not department_ids">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Saisissez une date de projet pour pouvoir générer les tâches</span>
+                                </div>
+
+                                <!-- Generate tasks button -->
+                                <div class="mt-3 text-center"
+                                     invisible="not show_generate_tasks_button or stage != 'preparation' or not profiles_workload_valid or not has_lots or not all_departments_assigned">
+                                    <button name="action_create_tasks" type="object"
+                                            class="btn btn-primary mb-2 w-100"
+                                            string="Générer les tâches"/>
+                                </div>
+
+                                <!-- Feedback message: Create lots -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="has_lots or stage != 'preparation' or not profiles_workload_valid">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez créer au moins un lot dans l'onglet "Lots".</span>
+                                </div>
+                                <!-- Feedback message: Assign departments to lots -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="not has_lots or all_departments_assigned or stage != 'preparation' or not profiles_workload_valid">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez assigner tous les départements aux lots existants dans l'onglet
+                                        "Lots".
+                                    </span>
+                                </div>
+
+                                <!-- Project info -->
+                                <hr class="mt-2 mb-3" invisible="stage != 'project'"/>
+                                <div invisible="stage != 'project'">
+                                    <div class="mb-2 row" name="row_project_created_by">
+                                        <label for="project_created_by" class="text-muted col-md-5 form-label-compact">
+                                            Créé par:
+                                        </label>
+                                        <div class="col-md-7">
+                                            <field name="project_created_by" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                    <div class="row" name="row_project_created_date">
+                                        <label for="project_created_date"
+                                               class="text-muted col-md-5 form-label-compact">Créé le:
+                                        </label>
+                                        <div class="col-md-7">
+                                            <field name="project_created_date" nolabel="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Generate implementation project button -->
+                                <div class="mt-3 text-center"
+                                     invisible="stage != 'project' or project_type != 'etude_chiffrage' or implementation_project_id or not has_lots or not all_departments_assigned">
+                                    <button name="action_create_implementation_project" type="object"
+                                            class="btn btn-primary mb-2 w-100"
+                                            string="Générer le projet d'implémentation"/>
+                                </div>
+
+                                <!-- Feedback message: Create lots before generating implementation project -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="has_lots or stage != 'project' or project_type != 'etude_chiffrage' or implementation_project_id">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez créer au moins un lot dans l'onglet "Lots" pour générer le projet
+                                        d'implémentation.
+                                    </span>
+                                </div>
+                                <!-- Feedback message: Assign departments to lots before generating implementation project -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="not has_lots or all_departments_assigned or stage != 'project' or project_type != 'etude_chiffrage' or implementation_project_id">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez assigner tous les départements aux lots existants dans l'onglet
+                                        "Lots" pour générer le projet d'implémentation.
+                                    </span>
+                                </div>
+
+                                <!-- Generate tasks button (devis projects) -->
+                                <div class="mt-3 text-center"
+                                     invisible="not requires_devis_steps or stage != 'devis_validated' or not ((project_type == 'implementation' or project_type == 'etude_chiffrage') and date_start and date and not is_end_date_invalid) or (not profile_line_ids and profiles_required) or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids) or not profiles_workload_valid or not has_lots or not all_departments_assigned">
+                                    <button string="Générer les tâches" type="object" name="action_create_tasks"
+                                            class="btn btn-primary mb-2 w-100"/>
+                                </div>
+
+                                <!-- Feedback message: Create lots (devis projects) -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="has_lots or not requires_devis_steps or stage != 'devis_validated' or not ((project_type == 'implementation' or project_type == 'etude_chiffrage') and date_start and date and not is_end_date_invalid) or (not profile_line_ids and profiles_required) or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids)">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez créer au moins un lot dans l'onglet "Lots".</span>
+                                </div>
+                                <!-- Feedback message: Assign departments to lots (devis projects) -->
+                                <div class="alert alert-info text-center my-2" role="alert"
+                                     invisible="not has_lots or all_departments_assigned or not requires_devis_steps or stage != 'devis_validated' or not ((project_type == 'implementation' or project_type == 'etude_chiffrage') and date_start and date and not is_end_date_invalid) or (not profile_line_ids and profiles_required) or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids)">
+                                    <i class="fa fa-info-circle me-1" title="Information"></i>
+                                    <span>Vous devez assigner tous les départements aux lots existants dans l'onglet
+                                        "Lots".
+                                    </span>
+                                </div>
+
+                                <!-- Workload validation feedback message -->
+                                <div class="alert alert-danger d-flex align-items-center text-center my-2" role="alert"
+                                     invisible="profiles_workload_valid or (not requirement_line_ids and not custom_requirement_line_ids) or not requires_devis_steps or stage != 'devis_validated' or not ((project_type == 'implementation' or project_type == 'etude_chiffrage') and date_start and date and not is_end_date_invalid) or (not profile_line_ids and profiles_required) or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids)">
+                                    <i class="fa fa-exclamation-triangle me-2" title="Avertissement"></i>
+                                    <field name="profiles_workload_message" readonly="1" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Implementation Project details card (only for etude_chiffrage projects with implementation project) -->
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3"
+                         invisible="stage != 'project' or project_type != 'etude_chiffrage' or not implementation_project_id">
+                        <div class="card">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <strong class="card-header-title">Projet d'implémentation</strong>
+                            </div>
+                            <div class="card-body pb-2">
+                                <div class="mb-2 row">
+                                    <label for="project_created_by" class="text-muted col-md-5 form-label-compact">
+                                        Projet généré par:
+                                    </label>
+                                    <div class="col-md-7">
+                                        <field name="project_created_by" nolabel="1"/>
+                                    </div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <label for="project_created_date" class="text-muted col-md-5 form-label-compact">
+                                        Projet généré le:
+                                    </label>
+                                    <div class="col-md-7">
+                                        <field name="project_created_date" nolabel="1"/>
+                                    </div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <div class="col-md-5 text-muted form-label-compact">
+                                        <span>Projet</span>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <field name="implementation_project_id" nolabel="1" readonly="1"
+                                               options="{'no_create': True}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+
+            <!-- Add custom tabs after Description tab -->
+            <xpath expr="//notebook/page[@name='description']" position="after">
+                <!-- Lots tab -->
+                <page string="Lots" name="lots">
+                    <!-- Warning messages -->
+                    <div class="alert alert-warning" role="alert" invisible="has_lots">
+                        <strong>Attention:</strong>
+                        Vous devez créer au moins un lot pour ce projet.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not has_lots or all_departments_assigned">
+                        <strong>Attention:</strong>
+                        Tous les départements du projet doivent être assignés aux lots existants.
+                    </div>
+
+                    <!-- Create lot button - now hidden when there are no lots -->
+                    <div class="d-flex justify-content-end mb-2" invisible="not lot_ids">
+                        <button name="action_create_lot" type="object" string="Créer un lot" class="btn btn-primary"
+                                icon="fa-plus"
+                                invisible="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"/>
+                    </div>
+
+                    <div class="row">
+                        <div class="col" invisible="not lot_ids">
+                            <!-- Lots Table -->
+                            <field name="lot_ids"
+                                   readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                   context="{'hide_project_id': True, 'project_department_ids': department_ids, 'form_view_ref': 'project_requirement.view_project_department_lot_form_popup'}">
+                                <!-- List view -->
+                                <list editable="bottom" create="0">
+                                    <!-- Name -->
+                                    <field name="name" readonly="1" width="100"/>
+                                    <!-- Departments -->
+                                    <field name="department_ids" widget="many2many_tags"
+                                           placeholder="Sélectionner les départements du lot"
+                                           domain="[('id', 'in', available_department_ids)]"
+                                           options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
+                                    <field name="delivery_planned_date" width="140" readonly="1"/>
+                                    <field name="mep_planned_date" width="140" readonly="1"/>
+                                    <!-- Edit Button -->
+                                    <button name="action_open_lot_line_form" type="object" class="btn btn-primary"
+                                            icon="fa-pencil-square-o" width="80" string="Editer"
+                                            column_invisible="parent.stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id)"/>
+                                </list>
+                            </field>
+                        </div>
+
+                        <div class="col-12" invisible="lot_ids">
+                            <div class="d-flex">
+                                <div class="col-md-8">
+                                    <!-- Empty list placeholder -->
+                                    <field name="lot_ids"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                           context="{'hide_project_id': True, 'project_department_ids': department_ids, 'form_view_ref': 'project_requirement.view_project_department_lot_form_popup'}">
+                                        <list editable="bottom" create="0">
+                                            <!-- Name -->
+                                            <field name="name" readonly="1" width="100"/>
+                                            <!-- Departments -->
+                                            <field name="department_ids" widget="many2many_tags"
+                                                   placeholder="Sélectionner les départements du lot"
+                                                   domain="[('id', 'in', available_department_ids)]"
+                                                   options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
+                                            <field name="delivery_planned_date" width="140" readonly="1"/>
+                                            <field name="mep_planned_date" width="140" readonly="1"/>
+                                            <!-- Edit Button -->
+                                            <button name="action_open_lot_line_form" type="object"
+                                                    class="btn btn-primary"
+                                                    icon="fa-pencil-square-o" width="80" string="Editer"
+                                                    column_invisible="parent.stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id)"/>
+                                        </list>
+                                    </field>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty lots message -->
+                                    <div class="container text-center px-5 py-3 ms-3 me-2">
+                                        <i class="fa fa-tasks fa-4x text-muted mb-3" style="display: block;"
+                                           title="Liste de lots vide" aria-label="Liste de lots vide"/>
+                                        <h4>Aucun lot ajouté</h4>
+                                        <p class="text-muted">
+                                            Ajoutez des lots pour regrouper les départements
+                                        </p>
+                                        <div class="d-flex justify-content-center">
+                                            <button name="action_create_lot" type="object" string="Créer un lot"
+                                                    class="btn btn-primary"
+                                                    icon="fa-plus"
+                                                    invisible="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </page>
+
+                <!-- Profiles tab -->
+                <page string="Profils" name="profiles" invisible="not show_profiles_tab">
+                    <!-- Display total workload info -->
+                    <div class="border p-2 rounded mb-2 text-end">
+                        <field name="profiles_vs_requirements_workload_info" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <!-- Add validation message for workload -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="profiles_workload_valid or (not requirement_line_ids and not custom_requirement_line_ids)">
+                        <field name="profiles_workload_message" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <div class="row">
+                        <div class="col" invisible="not profile_line_ids">
+                            <!-- Show the list view with a reference to the external view -->
+                            <field name="profile_line_ids"
+                                   readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                   context="{'default_project_id': id}">
+                                <list editable="bottom">
+                                    <field name="role_id" placeholder="Rôle" required="1"/>
+                                    <field name="workload_days" width="150" sum="Total Charge"/>
+                                    <field name="daily_rate" string="Taux journalier" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}" width="250"/>
+                                    <field name="involvement" string="Implication" width="150"/>
+                                    <field name="currency_id" optional="hide"/>
+                                    <field name="involvement_percentage" string="% Implication" widget="percentage"
+                                           optional="hide"/>
+                                </list>
+                            </field>
+                        </div>
+                        <div class="col-12" invisible="profile_line_ids">
+                            <div class="d-flex">
+                                <div class="col-md-8">
+                                    <!-- Empty list placeholder -->
+                                    <field name="profile_line_ids"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                           context="{'default_project_id': id}">
+                                        <list editable="bottom">
+                                            <field name="role_id" placeholder="Rôle" required="1"/>
+                                            <field name="daily_rate" string="Taux journalier" widget="monetary"
+                                                   options="{'currency_field': 'currency_id'}" width="250"/>
+                                            <field name="involvement" string="Implication" width="150"/>
+                                            <field name="workload_days" width="150" sum="Total Charge"/>
+                                            <field name="currency_id" optional="hide"/>
+                                            <field name="involvement_percentage" string="% Implication"
+                                                   widget="percentage"
+                                                   optional="hide"/>
+                                        </list>
+                                    </field>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty profiles message -->
+                                    <div class="container text-center px-5 py-3 ms-3 me-2">
+                                        <i class="fa fa-user-circle fa-4x text-muted mb-3" style="display: block;"
+                                           title="Liste de profils vide" aria-label="Liste de profils vide"/>
+                                        <h4>Aucun profil ajouté</h4>
+                                        <p class="text-muted">
+                                            Ajoutez des profils pour définir les rôles dans ce projet
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </page>
+
+                <!-- Exigences tab -->
+                <page string="Exigences" name="requirements_main" invisible="not show_requirements_tab">
+                    <!-- Show buttons at top when requirements exist -->
+                    <div class="d-flex justify-content-end mb-2" invisible="not requirement_line_ids">
+                        <button name="action_clear_requirement_lines" type="object"
+                                class="btn btn-link text-danger p-2"
+                                confirm="Êtes-vous sûr de vouloir supprimer toutes les exigences? Cette action ne peut pas être annulée."
+                                invisible="(stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))">
+                            <i class="fa fa-trash-o me-1" role="img" aria-label="Retirer"/>
+                            <span>Retirer toutes les exigences</span>
+                        </button>
+                        <button name="action_insert_missing_requirements" type="object"
+                                class="btn btn-secondary mb-2 ms-2"
+                                invisible="not show_insert_requirements_button or (stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))"
+                                data-hotkey="i"
+                                help="Met à jour les exigences en fonction des départements sélectionnés. Ajoute les nouvelles exigences sans supprimer les exigences existantes.">
+                            <i class="fa fa-plus me-1" role="img" aria-label="Ajouter"/>
+                            <span>Insérer des exigences manquantes</span>
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <!-- Requirements notebook -->
+                        <div class="col" invisible="not requirement_line_ids">
+                            <notebook name="requirements_notebook">
+                                <!-- All Requirements Tab -->
+                                <page string="Toutes les exigences" name="requirements">
+                                    <field name="requirement_line_ids"
+                                           domain="[('requirement_id.department_id', 'in', department_ids)]"
+                                           context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)">
+                                        <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                    </field>
+                                </page>
+
+                                <!-- Department-specific tabs -->
+                                <page string="Achat" name="achat" invisible="not has_achat_department">
+                                    <div class="message-container">
+                                        <field name="achat_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Commerciale" name="vente" invisible="not has_vente_department">
+                                    <div class="message-container">
+                                        <field name="vente_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Finance" name="finance" invisible="not has_finance_department">
+                                    <div class="message-container">
+                                        <field name="finance_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Ressources humaines" name="rh" invisible="not has_rh_department">
+                                    <div class="message-container">
+                                        <field name="rh_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Stock" name="stock" invisible="not has_stock_department">
+                                    <div class="message-container">
+                                        <field name="stock_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Production" name="production" invisible="not has_production_department">
+                                    <div class="message-container">
+                                        <field name="production_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                                <page string="Transverse" name="transverse" invisible="not has_transverse_department">
+                                    <div class="message-container">
+                                        <field name="transverse_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}">
+                                            <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                            </notebook>
+                        </div>
+
+                        <!-- Empty requirements section -->
+                        <div class="col-12" invisible="requirement_line_ids">
+                            <div class="d-flex">
+                                <div class="col-md-8">
+                                    <!-- Empty list placeholder -->
+                                    <field name="requirement_line_ids"
+                                           domain="[('requirement_id.department_id', 'in', department_ids)]"
+                                           context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)">
+                                        <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
+                                    </field>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty requirements message -->
+                                    <div class="container text-center px-5 py-3 ms-3 me-2">
+                                        <i class="fa fa-list-ul fa-4x text-muted mb-3" style="display: block;"
+                                           title="Liste d'exigences vide" aria-label="Liste d'exigences vide"/>
+                                        <h4>Aucune exigence ajoutée</h4>
+                                        <p class="text-muted"
+                                           invisible="not show_insert_requirements_button">
+                                            Cliquez pour ajouter les exigences liées aux départements sélectionnés.
+                                        </p>
+                                        <div class="d-flex justify-content-center">
+                                            <button name="action_insert_missing_requirements" type="object"
+                                                    class="btn btn-secondary me-2"
+                                                    invisible="not show_insert_requirements_button or (stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))"
+                                                    data-hotkey="i"
+                                                    help="Affiche un assistant permettant de sélectionner les exigences à ajouter au projet">
+                                                <i class="fa fa-list me-1" role="img" aria-label="Sélectionner"/>
+                                                <span>Sélectionner...</span>
+                                            </button>
+                                            <button name="action_insert_all_requirements" type="object"
+                                                    class="btn btn-primary"
+                                                    invisible="not show_insert_requirements_button or (stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))"
+                                                    data-hotkey="a"
+                                                    help="Insère automatiquement toutes les exigences manquantes liées aux départements sélectionnés.">
+                                                <i class="fa fa-plus me-1" role="img" aria-label="Insérer tout"/>
+                                                <span>Tout insérer</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </page>
+
+                <!-- Custom Requirements Tab -->
+                <page string="Exigences" name="custom_requirements"
+                      invisible="not show_custom_requirements_tab">
+
+                    <!-- Show buttons at top when custom requirements exist -->
+                    <div class="d-flex justify-content-end mb-2" invisible="not custom_requirement_line_ids">
+                        <button name="action_clear_custom_requirement_lines" type="object"
+                                class="btn btn-link text-danger p-2"
+                                confirm="Êtes-vous sûr de vouloir supprimer toutes les exigences? Cette action ne peut pas être annulée."
+                                invisible="(stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))">
+                            <i class="fa fa-trash-o me-1" role="img" aria-label="Retirer"/>
+                            <span>Retirer toutes les exigences</span>
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <!-- Requirements notebook -->
+                        <div class="col" invisible="not custom_requirement_line_ids">
+                            <notebook name="custom_requirements_notebook">
+                                <!-- All Custom Requirements Tab -->
+                                <page string="Toutes les exigences" name="all_custom_requirements">
+                                    <field name="custom_requirement_line_ids"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                           context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                        <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                    </field>
+                                </page>
+
+                                <!-- Department-specific tabs -->
+                                <page string="Achat" name="custom_achat" invisible="not has_achat_department">
+                                    <div class="message-container">
+                                        <field name="custom_achat_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Commerciale" name="custom_vente" invisible="not has_vente_department">
+                                    <div class="message-container">
+                                        <field name="custom_vente_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Finance" name="custom_finance" invisible="not has_finance_department">
+                                    <div class="message-container">
+                                        <field name="custom_finance_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Ressources humaines" name="custom_rh" invisible="not has_rh_department">
+                                    <div class="message-container">
+                                        <field name="custom_rh_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Stock" name="custom_stock" invisible="not has_stock_department">
+                                    <div class="message-container">
+                                        <field name="custom_stock_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Production" name="custom_production"
+                                      invisible="not has_production_department">
+                                    <div class="message-container">
+                                        <field name="custom_production_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+
+                                <page string="Transverse" name="custom_transverse"
+                                      invisible="not has_transverse_department">
+                                    <div class="message-container">
+                                        <field name="custom_transverse_requirement_lines"
+                                               readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                               class="department-requirement-list"
+                                               context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                            <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                        </field>
+                                    </div>
+                                </page>
+                            </notebook>
+                        </div>
+
+                        <!-- Empty custom requirements section -->
+                        <div class="col-12" invisible="custom_requirement_line_ids">
+                            <div class="d-flex">
+                                <div class="col-md-8">
+                                    <!-- Empty list placeholder -->
+                                    <field name="custom_requirement_line_ids"
+                                           readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                           context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type}">
+                                        <list view_ref="project_requirement.view_project_custom_requirement_line_department_embedded"/>
+                                    </field>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty requirements message -->
+                                    <div class="container text-center px-5 py-3 ms-3 me-2">
+                                        <i class="fa fa-list-ul fa-4x text-muted mb-3" style="display: block;"
+                                           title="Liste d'exigences personnalisées vide"
+                                           aria-label="Liste d'exigences personnalisées vide"/>
+                                        <h4>Aucune exigence ajoutée</h4>
+                                        <p class="text-muted">
+                                            Créez des exigences pour ce projet
+                                        </p>
+                                        <div class="d-flex justify-content-center">
+                                            <button name="action_add_custom_requirement_line" type="object"
+                                                    class="btn btn-primary"
+                                                    invisible="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                                    help="Ajoute une exigence personnalisée au projet">
+                                                <i class="fa fa-plus me-1" role="img" aria-label="Ajouter"/>
+                                                <span>Ajouter une exigence</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Custom Form View for Project Department Lot Popup -->
+    <record id="view_project_department_lot_form_popup" model="ir.ui.view">
+        <field name="name">project.department.lot.form.popup</field>
+        <field name="model">project.department.lot</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <!-- Name (Readonly) -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <!-- Departments group -->
+                    <group string="Départements" name="departments">
+                        <field name="available_department_ids" invisible="1"/>
+                        <field name="department_ids"
+                               widget="many2many_tags"
+                               domain="[('id', 'in', available_department_ids)]"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"
+                               placeholder="Sélectionner les départements"
+                               nolabel="1"/>
+                    </group>
+                    <!-- Dates group -->
+                    <group string="Planification des dates" name="planning_dates">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-calendar text-muted me-2" title="Calendrier de livraison"/>
+                                    <label for="delivery_planned_date" class="me-3 text-nowrap"/>
+                                    <field name="delivery_planned_date" nolabel="1"
+                                           placeholder="Date livraison"/>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-calendar text-muted me-2" title="Calendrier de mise en production"/>
+                                    <label for="mep_planned_date" class="me-3 text-nowrap"/>
+                                    <field name="mep_planned_date" nolabel="1"
+                                           placeholder="Date mise en production"/>
+                                </div>
+                            </div>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- List view -->
+    <record id="view_project_list_inherit" model="ir.ui.view">
+        <field name="name">project.project.list.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <!-- Auto-expand the list view by project type -->
+            <xpath expr="//list" position="attributes">
+                <attribute name="expand">1</attribute>
+                <attribute name="default_group_by">project_type</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Override Default Project Create Form View -->
+    <record id="view_project_creation_form" model="ir.ui.view">
+        <field name="name">project.project.form.simplified.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.project_project_view_form_simplified"/>
+        <field name="priority">5</field>
+        <field name="arch" type="xml">
+            <!-- Replace the entire form content -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Nouveau Projet</attribute>
+            </xpath>
+
+            <!-- Set placeholder for project name -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="placeholder">Nom du projet</attribute>
+            </xpath>
+
+            <!-- Hide the original fields we don't need -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('row') and hasclass('o_settings_container')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//div[@name='alias_def']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Add our fields with proper layout -->
+            <xpath expr="//div[hasclass('oe_title') and hasclass('mb-lg-3') and hasclass('mb-md-2')]" position="after">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <group name="project_details">
+                            <field name="partner_id" string="Client" placeholder="Sélectionner un client"
+                                   readonly="(stage == 'project') or (project_type == 'implementation' and from_etude_chiffrage)"
+                                   required="1"/>
+                            <field name="project_type" required="1"
+                                   readonly="from_crm and not from_etude_chiffrage or stage == 'project' or id"
+                                   placeholder="Sélectionner le type de projet"/>
+                            <field name="implementation_category"
+                                   invisible="project_type != 'implementation'"
+                                   required="project_type == 'implementation'"
+                                   readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
+                            <field name="etude_chiffrage_category"
+                                   invisible="project_type != 'etude_chiffrage'"
+                                   required="project_type == 'etude_chiffrage'"
+                                   readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
+                            <field name="department_type"
+                                   invisible="project_type != 'implementation'"
+                                   required="project_type == 'implementation'"
+                                   readonly="is_department_type_readonly"/>
+                            <field name="department_ids"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
+                                   readonly="stage == 'project'"
+                                   domain="[('id', 'in', available_department_ids)]"
+                                   placeholder="Sélectionner le(s) département(s)"/>
+                        </group>
+                    </div>
+                    <div class="col-md-6">
+                        <group>
+                            <field name="user_id" string="Chef de projet" widget="many2one_avatar_user" required="1"
+                                   readonly="stage == 'project'"/>
+                            <field name="stage" invisible="1" force_save="1"/>
+                        </group>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Create a new action to open the full form view in a dialog -->
+    <record id="action_project_full_form_popup" model="ir.actions.act_window">
+        <field name="name">Nouveau Projet</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_project_form_inherit"/>
+        <field name="target">current</field>
+        <field name="context">{'default_stage': 'preparation', 'from_popup': True}</field>
+    </record>
+
+    <!-- Override the project.create_project action to use our full form view in a popup -->
+    <record id="project.open_create_project" model="ir.actions.act_window">
+        <field name="name">Nouveau Projet</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_project_form_inherit"/>
+        <field name="target">current</field>
+        <field name="context">{'default_stage': 'preparation', 'from_popup': True}</field>
+    </record>
+
+    <!-- Configure default stage and filter by project type -->
+    <record id="project.open_view_project_all" model="ir.actions.act_window">
+        <field name="context">{'default_stage': 'preparation', 'search_default_groupby_project_type': 1, 'limit': 80}
+        </field>
+    </record>
+
+    <!-- Add Project Type to Search View -->
+    <record id="view_project_search_inherit" model="ir.ui.view">
+        <field name="name">project.project.search.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <!-- Add project type to search filters -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_type"/>
+            </xpath>
+
+            <!-- Add group by project type -->
+            <xpath expr="//filter[@name='groupby_stage']" position="after">
+                <filter string="Type de projet" name="groupby_project_type" context="{'group_by': 'project_type'}"/>
+            </xpath>
+
+            <!-- Add specific filters for each project type -->
+            <xpath expr="//filter[@name='inactive']" position="after">
+                <separator/>
+                <filter string="Etude et Chiffrage" name="etude_chiffrage"
+                        domain="[('project_type', '=', 'etude_chiffrage')]"/>
+                <filter string="Implémentation" name="implementation"
+                        domain="[('project_type', '=', 'implementation')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Override partner_id field attribute to always be visible and required in list view -->
+    <record id="view_project_list_partner_always_visible" model="ir.ui.view">
+        <field name="name">project.project.list.partner.always.visible</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="sale_project.project_project_view_tree_inherit_sale_project"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="required">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Override partner_id field attribute to always be visible and required in form view -->
+    <record id="view_edit_project_partner_always_visible" model="ir.ui.view">
+        <field name="name">project.project.form.partner.always.visible</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="required">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Make the Share Project button less prominent -->
+    <record id="view_project_share_button_secondary" model="ir.ui.view">
+        <field name="name">project.project.form.share.button.secondary</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_open_share_project_wizard']" position="attributes">
+                <attribute name="class">btn-secondary</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Hide specific columns in project requirement lines -->
+    <record id="view_project_requirement_line_hide_columns" model="ir.ui.view">
+        <field name="name">project.requirement.line.tree.hide.columns</field>
+        <field name="model">project.requirement.line</field>
+        <field name="inherit_id" ref="project_requirement.view_project_requirement_line_list"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <!-- Hide estimated days (calendar duration) column -->
+            <xpath expr="//list/field[@name='estimated_days']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- Hide planned start date column -->
+            <xpath expr="//list/field[@name='planned_start_date']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- Hide planned end date column -->
+            <xpath expr="//list/field[@name='planned_end_date']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <!-- Hide order column -->
+            <xpath expr="//list/field[@name='order']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

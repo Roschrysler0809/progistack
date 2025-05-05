@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Gantt view for subtask resource planning -->
+    <record id="view_project_task_subtask_gantt" model="ir.ui.view">
+        <field name="name">project.task.subtask.gantt</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <gantt date_start="planned_date_begin"
+                   date_stop="date_deadline"
+                   default_scale="month"
+                   scales="day,week,month,year"
+                   color="project_id"
+                   default_group_by="user_ids,project_id"
+                   string="Planning des sous-tâches par ressource"
+                   js_class="task_gantt"
+                   display_unavailability="1"
+                   form_view_id="%(project_enterprise.project_task_view_form_in_gantt)d"
+                   precision="{'day': 'hour:quarter', 'week': 'day:half', 'month': 'day:half'}"
+                   progress_bar="user_ids"
+                   pill_label="True"
+                   total_row="True">
+                <templates>
+                    <div t-name="gantt-popover" id="subtask_gantt_popover">
+                        <div name="project_id" id="subtask_project_id">
+                            <strong>Projet — </strong>
+                            <t t-if="project_id" t-esc="project_id[1]"/>
+                            <t t-else="">
+                                <span class="fst-italic text-muted">
+                                    <i class="fa fa-lock"></i>
+                                    Privé
+                                </span>
+                            </t>
+                        </div>
+                        <div t-if="parent_id" id="subtask_parent_id">
+                            <strong>Tâche parente — </strong>
+                            <t t-esc="parent_id[1]"/>
+                        </div>
+                        <div t-if="user_names" id="subtask_user_names">
+                            <strong>Assignés — </strong>
+                            <t t-esc="user_names"/>
+                        </div>
+                        <div t-if="allocated_hours" id="subtask_allocated_hours">
+                            <strong>Temps alloué — </strong>
+                            <t t-esc="allocated_hours"/>
+                        </div>
+                        <div id="subtask_date_range">
+                            <t t-esc="planned_date_begin.toFormat('f ')"/>
+                            <i class="fa fa-long-arrow-right" title="Arrow"/>
+                            <t t-esc="date_deadline.toFormat(' f')"/>
+                        </div>
+                        <footer replace="0" id="subtask_footer">
+                            <button name="action_unschedule_task" type="object" string="Annuler la planification"
+                                    class="btn btn-sm btn-secondary" id="subtask_unschedule_button"
+                                    confirm="Êtes-vous sûr de vouloir annuler la planification de cette sous-tâche ?"/>
+                        </footer>
+                    </div>
+                </templates>
+                <field name="parent_id"/>
+                <field name="child_ids"/>
+                <field name="project_id"/>
+                <field name="user_ids"/>
+                <field name="user_names"/>
+                <field name="allocated_hours"/>
+            </gantt>
+        </field>
+    </record>
+
+    <!-- Action for the Gantt view -->
+    <record id="action_project_task_subtask_gantt" model="ir.actions.act_window">
+        <field name="name">Planning des sous-tâches par ressource</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="search_view_id" ref="view_task_search_with_subtasks"/>
+        <field name="domain">[('parent_id', '!=', False)]</field>
+        <field name="context">{'group_by': ['user_ids', 'project_id']}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune sous-tâche trouvée
+            </p>
+        </field>
+    </record>
+
+    <!-- Link the Gantt view to the action -->
+    <record id="action_project_task_subtask_gantt_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="view_project_task_subtask_gantt"/>
+        <field name="act_window_id" ref="action_project_task_subtask_gantt"/>
+    </record>
+</odoo> 

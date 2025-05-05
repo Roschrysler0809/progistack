@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the project form view to modify allocated_hours field -->
+    <record id="view_project_form_inherit_timesheet" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.timesheet</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="hr_timesheet.project_invoice_form"/>
+        <field name="arch" type="xml">
+            <!-- Make allocated_hours field invisible -->
+            <xpath expr="//field[@name='allocated_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

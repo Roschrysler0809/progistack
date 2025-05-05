@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_department_lot_list" model="ir.ui.view">
+        <field name="name">project.department.lot.list</field>
+        <field name="model">project.department.lot</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false" delete="true">
+                <!-- Project (Optional) -->
+                <field name="project_id" invisible="context.get('hide_project_id', False)" optional="show"/>
+                <!-- Lot Name -->
+                <field name="name" readonly="1"/>
+                <!-- Departments -->
+                <field name="department_ids" widget="many2many_tags"
+                       domain="[('id', 'in', available_department_ids)]"
+                       options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
+                <field name="mep_planned_date" optional="show"/>
+                <field name="delivery_planned_date" optional="show"/>
+                <field name="available_department_ids" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_department_lot_form" model="ir.ui.view">
+        <field name="name">project.department.lot.form</field>
+        <field name="model">project.department.lot</field>
+        <field name="arch" type="xml">
+            <form string="Lot de départements">
+                <sheet>
+                    <!-- Lot Name -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <!-- Project (Optional) -->
+                    <group>
+                        <group>
+                            <field name="project_id" invisible="context.get('hide_project_id', False)" readonly="1"/>
+                            <field name="available_department_ids" invisible="1"/>
+                        </group>
+                    </group>
+                    <!-- Departments -->
+                    <group string="Départements" name="departments">
+                        <field name="department_ids"
+                               widget="many2many_tags"
+                               domain="[('id', 'in', available_department_ids)]"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"
+                               nolabel="1"/>
+                    </group>
+                    <group string="Dates" name="dates">
+                        <field name="mep_planned_date"/>
+                        <field name="delivery_planned_date"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_project_department_lot" model="ir.actions.act_window">
+        <field name="name">Lots de départements</field>
+        <field name="res_model">project.department.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'form_view_initial_mode': 'edit'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aucun lot de département défini</p>
+        </field>
+    </record>
+</odoo> 

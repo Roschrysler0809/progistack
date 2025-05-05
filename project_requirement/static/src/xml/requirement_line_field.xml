@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Basic template for the requirement line text field -->
+    <t t-name="project_requirement.RequirementLineTextField" owl="1">
+        <div class="o_field_requirement_line_text" t-ref="root">
+            <!-- Render the standard many2one field with hamburger icon on the right -->
+            <div class="o_field_many2one_container d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <Many2OneField t-props="many2oneProps"/>
+                </div>
+                <button t-if="!hasDescription() and !props.readonly"
+                        class="o_btn_add_description btn btn-link"
+                        title="Ajouter une description"
+                        t-on-click="onAddDescription">
+                    <i class="fa fa-bars"/>
+                </button>
+            </div>
+
+            <!-- Simple description text field -->
+            <div t-if="hasDescription()" class="o_field_requirement_line_text_description mt-1">
+                <input
+                        t-if="!props.readonly"
+                        class="o_description_input border-0 bg-transparent w-100 fst-italic"
+                        t-on-blur="onDescriptionBlur"
+                        t-on-keydown="onDescriptionKeydown"
+                        placeholder="Entrez une description"
+                        t-att-value="getDescription()"/>
+                <div t-if="props.readonly" class="o_description_text fst-italic">
+                    <span t-esc="getDescription()"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- List view version of the template -->
+    <t t-name="project_requirement.ListRequirementLineTextField">
+        <t t-component="componentToUse" t-props="props"/>
+    </t>
+</templates> 

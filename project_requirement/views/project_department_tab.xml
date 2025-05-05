@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template for a requirement tab for a specific department -->
+    <template id="department_tab_template">
+        <page t-att-string="department.name" t-att-name="'department_' + department.name.lower()">
+            <field name="requirement_line_ids"
+                   domain="[('requirement_id.department_id', 'in', department_ids)]"
+                   context="{'default_project_id': id}">
+                <!-- List view -->
+                <list default_order="order asc, planned_end_date asc">
+                    <field name="requirement_id"/>
+                    <field name="type" width="150"/>
+                    <field name="estimated_work_days" width="120" sum="Total" class="text-right"
+                           decoration-bf="has_modified_subrequirements"
+                           decoration-info="has_modified_subrequirements"/>
+                    <field name="estimated_days" width="120" sum="Total" class="text-right"/>
+                    <field name="has_modified_subrequirements" widget="boolean_toggle" width="50"
+                           nolabel="1" optional="hide"/>
+                    <field name="planned_start_date" width="150" class="text-right"/>
+                    <field name="planned_end_date" width="150" class="text-right"/>
+                    <field name="order" width="70"/>
+                </list>
+                <!-- Form view -->
+                <form>
+                    <sheet>
+                        <!-- Title section with requirement_id as title -->
+                        <div class="oe_title w-100" style="margin-top: 0; width: 100%;">
+                            <h1 style="width: 100%; margin-bottom: 16px;">
+                                <field name="requirement_id"
+                                       domain="[('department_id', 'in', department_ids)]"
+                                       placeholder="Exigence" class="w-100"
+                                       options="{'no_create': True, 'no_create_edit': True}"
+                                       on_change="1"/>
+                            </h1>
+                        </div>
+
+                        <!-- Department field below the title -->
+                        <div class="mb-3">
+                            <label for="department_id" class="text-muted">Département:</label>
+                            <field name="department_id" readonly="1" class="ms-2"/>
+                        </div>
+
+                        <!-- Requirement details -->
+                        <group>
+                            <group>
+                                <field name="project_id" invisible="1"/>
+                                <field name="type"/>
+                                <field name="order"/>
+                            </group>
+                            <group>
+                                <field name="planned_start_date"/>
+                                <field name="planned_end_date"/>
+                                <div class="row mt-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="estimated_work_days" class="fw-bold">Total Charge (Jours):</label>
+                                        <field name="estimated_work_days" readonly="1" class="h4 ms-2"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="estimated_days" class="fw-bold">Durée calendaire:</label>
+                                        <field name="estimated_days" readonly="1" class="h4 ms-2"/>
+                                    </div>
+                                </div>
+                            </group>
+                        </group>
+
+                        <!-- Challenges and solutions -->
+                        <group>
+                            <field name="challenges" placeholder="Challenges liés à cette exigence..."/>
+                        </group>
+                        <group>
+                            <field name="solutions" placeholder="Solutions proposées pour cette exigence..."/>
+                        </group>
+
+                        <!-- Subrequirements tab -->
+                        <notebook class="mt-4">
+                            <page string="Sous-exigences" name="subrequirements">
+                                <!-- Subrequirements table -->
+                                <field name="subrequirement_line_ids"
+                                       context="{'default_department_id': department.id}"
+                                       readonly="project_stage == 'project'">
+                                    <!-- List View -->
+                                    <list decoration-muted="not display_name" editable="bottom">
+                                        <field name="order" widget="handle"
+                                               invisible="parent.project_stage == 'project'"/>
+                                        <field name="subrequirement_id"
+                                               domain="[('department_id', 'in', department_ids)]"
+                                               context="{'default_department_id': department.id}"
+                                               placeholder="Sous-exigence" class="w-100"
+                                               options="{'no_create': True, 'no_create_edit': True}"/>
+                                        <field name="department_id" optional="hide" readonly="1"/>
+                                        <field name="complexity" widget="priority"/>
+                                        <field name="estimated_work_days" width="150" sum="Total"
+                                               decoration-bf="is_modified" decoration-info="is_modified"/>
+                                        <button name="action_revert_estimated_work_days"
+                                                type="object"
+                                                icon="fa-undo"
+                                                title="Rétablir la valeur originale"
+                                                confirm="Êtes-vous sûr de vouloir rétablir la valeur originale de charge (Jours)?"
+                                                invisible="not is_modified or parent.project_stage == 'project'"/>
+                                        <field name="is_modified" widget="boolean_toggle" width="50"
+                                               nolabel="1" optional="hide"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </page>
+    </template>
+</odoo> 

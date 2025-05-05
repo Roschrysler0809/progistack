@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_project_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Add Project Update button in button box -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_project_updates" type="object" class="oe_stat_button"
+                        icon="fa-file-text-o" invisible="project_update_count == 0">
+                    <field name="project_update_count" widget="statinfo" string="Suivis"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_project_list_inherit" model="ir.ui.view">
+        <field name="name">project.project.list.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_tasks']" position="after">
+                <button name="action_view_project_updates" type="object"
+                        string="Suivis" icon="fa-file-text-o"
+                        class="btn btn-secondary" invisible="project_update_count == 0"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_project_kanban_inherit" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sequence']" position="after">
+                <field name="project_update_count"/>
+            </xpath>
+            <xpath expr="//div[hasclass('min-w-0')]" position="inside">
+                <div t-if="record.project_update_count.raw_value > 0" t-attf-class="mt-2">
+                    <a name="action_view_project_updates" type="object" class="text-primary">
+                        <i class="fa fa-file-text-o me-1" title="Suivis"/>
+                        <t t-out="record.project_update_count.raw_value"/>
+                        <span class="ms-1">Suivis</span>
+                    </a>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

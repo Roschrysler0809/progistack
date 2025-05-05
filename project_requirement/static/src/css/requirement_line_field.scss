@@ -1,0 +1,66 @@
+/* Styles for requirement line field widget - extends the Many2One field */
+
+.o_field_requirement_line_text {
+    position: relative;
+    
+    /* Style for hamburger button */
+    .o_btn_add_description {
+        z-index: 2;
+        margin: 0;
+        padding: 0 6px;
+        color: $o-gray-500;
+        
+        &:hover {
+            color: $o-gray-700;
+        }
+        
+        .fa-bars {
+            font-size: 14px;
+        }
+    }
+    
+    /* Add space on the right for the hamburger button */
+    .o_field_many2one_container {
+        .o_input_dropdown {
+            padding-right: 30px;
+        }
+    }
+    
+    /* Description input styling */
+    .o_field_requirement_line_text_description {
+        margin-top: 0.25rem;
+        
+        /* Style for input */
+        .o_description_input {
+            padding: 0;
+            color: $o-gray-700;
+            font-size: 0.9rem;
+            
+            &:focus {
+                outline: none;
+            }
+            
+            &::placeholder {
+                color: $o-gray-400;
+                font-style: italic;
+            }
+        }
+        
+        /* Style for readonly description */
+        .o_description_text {
+            padding: 0;
+            color: $o-gray-700;
+            font-size: 0.9rem;
+        }
+    }
+}
+
+/* Style for list view to ensure description appears below */
+.o_list_view .o_data_cell .o_field_requirement_line_text {
+    /* Force proper display in list view */
+    .o_field_requirement_line_text_description {
+        display: block;
+        width: 100%;
+        margin-top: 3px;
+    }
+} 

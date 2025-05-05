@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Email template for sending the report -->
+    <record id="mail_template_project_update" model="mail.template">
+        <field name="name">Rapport de projet</field>
+        <field name="model_id" ref="project.model_project_update"/>
+        <field name="subject">Rapport de suivi du {{ object.report_date.strftime('%d/%m/%Y') }}{{ ' au ' + object.report_date_end.strftime('%d/%m/%Y') if object.report_date_end else '' }}</field>
+        <field name="email_from">{{ user.email_formatted }}</field>
+        <field name="partner_to">{{ ','.join(map(str, object.project_id.partner_id.ids)) }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                <p style="margin: 0px; padding: 0px; font-size: 13px; line-height: 1.5;">
+                    Bonjour,
+                    <br/>
+                    <br/>
+                    Veuillez trouver ci-joint le rapport de suivi du projet de la période du
+                    <t t-esc="object.report_date.strftime('%d/%m/%Y')"/>
+                    <t t-if="object.report_date_end">au
+                        <t t-esc="object.report_date_end.strftime('%d/%m/%Y')"/>
+                    </t>
+                    .
+                    <br/>
+                    <br/>
+                    Cordialement,
+                    <br/>
+                    <strong>L'équipe PROGISTACK</strong>
+                </p>
+            </div>
+        </field>
+    </record>
+</odoo> 

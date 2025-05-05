@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- List view -->
+        <record id="view_project_department_list" model="ir.ui.view">
+            <field name="name">project.department.list</field>
+            <field name="model">project.department</field>
+            <field name="arch" type="xml">
+                <list create="1" editable="bottom">
+                    <field name="sequence" widget="handle" readonly="is_readonly"/>
+                    <field name="name" readonly="is_readonly"/>
+                    <field name="short_name" readonly="is_readonly"/>
+                    <field name="code" readonly="is_readonly"/>
+                    <field name="color" widget="color_picker" optional="show" readonly="is_readonly"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form view -->
+        <record id="view_project_department_form" model="ir.ui.view">
+            <field name="name">project.department.form</field>
+            <field name="model">project.department</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <!-- Name -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Nom du département" readonly="is_readonly"/>
+                            </h1>
+                        </div>
+                        <!-- Fields -->
+                        <group>
+                            <group>
+                                <field name="code" placeholder="Identifiant unique (ex: achat)" readonly="is_readonly"/>
+                                <field name="short_name" placeholder="Nom court (ex: RH)" readonly="is_readonly"/>
+                                <field name="color" widget="color_picker" readonly="is_readonly"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- View Actions -->
+        <record id="action_project_department" model="ir.actions.act_window">
+            <field name="name">Départements</field>
+            <field name="res_model">project.department</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('code', '!=', 'generic')]</field>
+        </record>
+    </data>
+</odoo>

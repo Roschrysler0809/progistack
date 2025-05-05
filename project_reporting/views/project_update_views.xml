@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="project_update_view_form_extended" model="ir.ui.view">
+        <field name="name">project.update.form.extended</field>
+        <field name="model">project.update</field>
+        <field name="inherit_id" ref="project.project_update_view_form"/>
+        <field name="arch" type="xml">
+            <!-- CSS Styles -->
+            <xpath expr="//form" position="inside">
+                <style>
+                    .period-report-list {
+                    width: 100%;
+                    }
+                    .period-report-list .o_list_text_ellipsis {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    }
+                    .period-report-state-indicator {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    padding: 10px;
+                    }
+                    .period-report-state-indicator field {
+                    padding: 5px 15px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    }
+                    .sheet-top-right-ribbon {
+                    position: absolute;
+                    top: 0px;
+                    right: 0px;
+                    z-index: 10; /* Ensure it is above other content */
+                    }
+                </style>
+            </xpath>
+
+            <!-- Add header with action buttons -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <!-- Send Email Button -->
+                    <button name="action_send_by_email" string="Envoyer par email" type="object"
+                            class="btn-secondary" icon="fa-envelope"
+                            invisible="state == 'sent' or not id"/>
+                    <!-- Draft Button (for admins to reset if needed) -->
+                    <button name="action_set_to_draft" string="Remettre en brouillon" type="object"
+                            class="btn-secondary" icon="fa-undo"
+                            invisible="state == 'draft'"
+                            groups="base.group_system"/>
+                    <!-- State Field -->
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent"/>
+                </header>
+            </xpath>
+
+            <!-- Add ribbon inside the sheet -->
+            <xpath expr="//sheet" position="inside">
+                <widget name="web_ribbon" title="Envoyé" bg_color="bg-success" invisible="state != 'sent'"
+                        class="sheet-top-right-ribbon"/>
+            </xpath>
+
+            <!-- Make name field read-only -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
+
+            <!-- Hide native state field-->
+            <xpath expr="//field[@name='status']" position="attributes">
+                <attribute name="invisible">1</attribute>
+                <attribute name="readonly">1</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+
+            <!-- Remove original date field -->
+            <xpath expr="//field[@name='date']" position="replace">
+            </xpath>
+            <!-- Add native date field as readonly and hidden -->
+            <xpath expr="//field[@name='status']" position="before">
+                <field name="date" readonly="1" invisible="1"/>
+            </xpath>
+
+            <!-- Add date fields below author -->
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="date" readonly="1" invisible="1"/>
+            </xpath>
+
+            <!-- Remove original progress field -->
+            <xpath expr="//field[@name='progress']" position="replace">
+            </xpath>
+
+            <!-- Add date fields before status -->
+            <xpath expr="//field[@name='status']" position="before">
+                <group string="Date du rapport" name="report_date_group" colspan="2">
+                    <div class="d-flex align-items-center">
+                        <field name="report_date" widget="daterange"
+                               options="{'start_date_field': 'report_date', 'end_date_field': 'report_date_end'}"
+                               string="Date du rapport" readonly="state == 'sent'"/>
+                        <button name="action_add_end_date" string="Ajouter date de fin" type="object"
+                                class="btn btn-secondary ms-2" icon="fa-plus" invisible="1"/>
+                    </div>
+                    <field name="report_date_end" invisible="1"/>
+                </group>
+                <group string="État" name="status_group" colspan="2" invisible="not id">
+                    <field name="custom_status" widget="radio" required="1" readonly="state == 'sent'"
+                           invisible="not id"/>
+                    <field name="progress" widget="progressbar" options="{'editable': true}" invisible="not id"
+                           readonly="state == 'sent'"/>
+                </group>
+            </xpath>
+
+            <!-- Hide user field when creating new record -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="invisible">not id</attribute>
+            </xpath>
+
+            <!-- Hide description field when creating new record and make readonly in sent state -->
+            <xpath expr="//field[@name='description']" position="attributes">
+                <attribute name="invisible">not id</attribute>
+                <attribute name="readonly">state == 'sent'</attribute>
+            </xpath>
+
+            <!-- Add custom fields -->
+            <xpath expr="//group" position="inside">
+                <!-- Wrap the project info in a styled div inside a group for layout -->
+                <group colspan="2" class="mt-3 mb-n3">
+                    <div class="border p-3" role="alert" colspan="2">
+                        <strong>Informations du projet:</strong>
+                        <group name="project_info" class="mt-2">
+                            <field name="department_type" readonly="1"/>
+                            <field name="department_ids" widget="many2many_tags" options="{'color_field': 'color'}"
+                                   readonly="1"/>
+                        </group>
+                    </div>
+                </group>
+            </xpath>
+
+            <!-- Hide notebook when creating new record -->
+            <xpath expr="//notebook" position="attributes">
+                <attribute name="invisible">not id</attribute>
+            </xpath>
+
+            <!-- Add Flash Report and Tracking Report tabs -->
+            <xpath expr="//notebook" position="inside">
+                <!-- Flash Report Tab -->
+                <page string="Flash Report">
+                    <field name="project_flash_report_line_ids" readonly="state == 'sent'">
+                        <list class="o_list_table_spacing period-report-list" create="0" delete="0"
+                              editable="bottom">
+                            <!-- Edit Button -->
+                            <button name="open_form" string="Editer" type="object"
+                                    class="btn btn-primary" icon="fa-pencil-square-o" width="80"
+                                    invisible="parent.state == 'sent'"
+                                    column_invisible="parent.state == 'sent'"/>
+                            <field name="department" placeholder="Département" width="150" readonly="1"/>
+                            <field name="project_status" string="Statut" width="100"/>
+                            <field name="tasks_completed" widget="html_preview" width="200"
+                                   class="o_list_text_ellipsis"/>
+                            <field name="tasks_in_progress" widget="html_preview" width="200"
+                                   class="o_list_text_ellipsis"/>
+                            <field name="upcoming_deliveries" widget="html_preview" width="200"
+                                   class="o_list_text_ellipsis"/>
+                            <field name="attention_points" widget="html_preview" width="200"
+                                   class="o_list_text_ellipsis"/>
+                        </list>
+                    </field>
+                </page>
+                <!-- Tracking Report Tab -->
+                <page string="Suivi Projet">
+                    <div class="d-flex justify-content-end mb-1">
+                        <button name="group_tracking_lines_by_lot" string="Vue groupée par Lot" type="object"
+                                class="btn btn-secondary btn-sm" icon="fa-cubes"/>
+                    </div>
+                    <field name="project_tracking_report_line_ids" readonly="state == 'sent'">
+                        <list class="o_list_table_spacing period-report-list" create="0" delete="0"
+                              editable="bottom">
+                            <!-- Edit Button -->
+                            <button name="open_form" string="Editer" type="object"
+                                    class="btn btn-primary" icon="fa-pencil-square-o" width="80"
+                                    invisible="parent.state == 'sent'"
+                                    column_invisible="parent.state == 'sent'"/>
+                            <field name="requirement" readonly="1" width="150"/>
+                            <field name="subrequirement" readonly="1" width="150"/>
+                            <field name="department" readonly="1" width="120"/>
+                            <field name="lot_number" width="60" optional="show"/>
+                            <field name="design_implementation_percentage" widget="progressbar" width="100"
+                                   options="{'editable': true}"/>
+                            <field name="validation_percentage" widget="progressbar" width="100"
+                                   options="{'editable': true}"/>
+                            <field name="integration_percentage" widget="progressbar" width="100"
+                                   options="{'editable': true}"/>
+                            <field name="delivery_planned_date" readonly="1" width="120" optional="show"/>
+                            <field name="delivery_actual_date" width="120" optional="show"/>
+                            <field name="mep_planned_date" readonly="1" width="120" optional="show"/>
+                            <field name="mep_actual_date" width="120" optional="show"/>
+                            <field name="comments" width="200"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="project_update_view_list_extended" model="ir.ui.view">
+        <field name="name">project.update.list.extended</field>
+        <field name="model">project.update</field>
+        <field name="inherit_id" ref="project.project_update_view_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add default sorting -->
+            <xpath expr="." position="attributes">
+                <attribute name="default_order">report_date desc</attribute>
+            </xpath>
+
+            <!-- Hide native status field -->
+            <xpath expr="//field[@name='status']" position="replace">
+            </xpath>
+
+            <!-- Add custom fields after the progress field -->
+            <xpath expr="//field[@name='progress']" position="after">
+                <field name="custom_status_color" column_invisible="True"/>
+                <field name="custom_status" widget="status_with_color"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'sent'"
+                       decoration-muted="state == 'draft'"/>
+                <button name="generate_flash_report_pdf" type="object"
+                        class="btn btn-primary btn-icon btn-lg" icon="fa-file-text-o" width="40"
+                        title="Générer Flash Report"/>
+                <button name="generate_tracking_report_excel" type="object"
+                        class="btn btn-success btn-icon btn-lg" icon="fa-file-excel-o" width="40"
+                        title="Générer Suivi Projet"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="project_update_view_kanban_extended" model="ir.ui.view">
+        <field name="name">project.update.kanban.extended</field>
+        <field name="model">project.update</field>
+        <field name="inherit_id" ref="project.project_update_view_kanban"/>
+        <field name="arch" type="xml">
+            <!-- Add default sorting -->
+            <xpath expr="." position="attributes">
+                <attribute name="default_order">report_date desc</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="project_update_view_search_extended" model="ir.ui.view">
+        <field name="name">project.update.search.extended</field>
+        <field name="model">project.update</field>
+        <field name="inherit_id" ref="project.project_update_view_search"/>
+        <field name="arch" type="xml">
+            <!-- Add custom filters -->
+            <xpath expr="//filter[@name='followed_updates']" position="after">
+                <filter string="Cette Semaine" name="this_week"
+                        domain="[('report_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <!-- Group status filters -->
+                <separator/>
+                <group string="Statut" name="status_group">
+                    <filter string="Ensoleillé" name="sunny" domain="[('custom_status', '=', 'sunny')]"
+                            help="Projets avec un statut ensoleillé"/>
+                    <filter string="Nuageux" name="cloudy" domain="[('custom_status', '=', 'cloudy')]"
+                            help="Projets avec un statut nuageux"/>
+                    <filter string="Pluvieux" name="rainy" domain="[('custom_status', '=', 'rainy')]"
+                            help="Projets avec un statut pluvieux"/>
+                </group>
+
+                <!-- Department type filters -->
+                <separator/>
+                <group string="Type d'implémentation" name="department_type_group">
+                    <filter string="Custom" name="custom" domain="[('department_type', '=', 'custom')]"/>
+                    <filter string="Standard" name="standard" domain="[('department_type', '=', 'standard')]"/>
+                </group>
+
+                <!-- State filters -->
+                <separator/>
+                <group string="État" name="state_group">
+                    <filter string="Brouillon" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Envoyé" name="sent" domain="[('state', '=', 'sent')]"/>
+                </group>
+            </xpath>
+
+            <!-- Add custom group by -->
+            <xpath expr="//filter[@name='date']" position="after">
+                <filter string="Type d'implémentation" name="group_by_department_type"
+                        context="{'group_by': 'department_type'}"/>
+                <filter string="État" name="group_by_state" context="{'group_by': 'state'}"/>
+                <filter string="Statut" name="group_by_custom_status" context="{'group_by': 'custom_status'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Create action for Créer button in project update dashboard -->
+    <record id="action_project_update_create_btn" model="ir.actions.server">
+        <field name="name">Créer</field>
+        <field name="model_id" ref="project.model_project_update"/>
+        <field name="binding_view_types">kanban,list</field>
+        <field name="binding_type">action</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.create_new_update_wizard()
+        </field>
+    </record>
+
+    <!-- Action to open the project update wizard -->
+    <record id="action_project_update_wizard" model="ir.actions.act_window">
+        <field name="name">Créer</field>
+        <field name="res_model">project.update.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Server action for the Tracking Report Excel export -->
+    <record id="action_generate_tracking_report_excel" model="ir.actions.server">
+        <field name="name">Exporter Suivi Projet</field>
+        <field name="model_id" ref="project.model_project_update"/>
+        <field name="binding_model_id" ref="project.model_project_update"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = records and records[0].generate_tracking_report_excel() or {"type":"ir.actions.act_window_close"}
+        </field>
+    </record>
+</odoo> 

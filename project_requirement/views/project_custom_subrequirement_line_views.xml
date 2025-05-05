@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_custom_subrequirement_line_list" model="ir.ui.view">
+        <field name="name">project.custom.subrequirement.line.list</field>
+        <field name="model">project.custom.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="order" widget="handle"/>
+                <field name="name"/>
+                <field name="department_id" width="150"/>
+                <field name="estimated_work_days" width="200" sum="Total"/>
+                <field name="complexity" widget="priority" width="80"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_custom_subrequirement_line_form" model="ir.ui.view">
+        <field name="name">project.custom.subrequirement.line.form</field>
+        <field name="model">project.custom.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de sous-exigence personnalisée">
+                <sheet>
+                    <!-- Title section with name as title -->
+                    <div class="oe_title w-100" style="margin-top: 0; width: 100%;">
+                        <h1 style="width: 100%; margin-bottom: 16px;">
+                            <field name="name" placeholder="Nom de la sous-exigence..." class="w-100"/>
+                        </h1>
+                    </div>
+
+                    <!-- Department field below the title -->
+                    <div class="mb-3">
+                        <label for="department_id" class="text-muted">Département:</label>
+                        <field name="department_id" class="ms-2" readonly="1"/>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="custom_requirement_line_id"
+                                   invisible="context.get('from_custom_requirement', False)"/>
+                            <field name="estimated_work_days" string="Charge (Jours)"/>
+                            <field name="complexity" widget="priority"/>
+                            <field name="order" string="Ordre"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View Actions -->
+    <record id="action_project_custom_subrequirement_line" model="ir.actions.act_window">
+        <field name="name">Lignes de sous-exigence personnalisées</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">project.custom.subrequirement.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre première ligne de sous-exigence personnalisée
+            </p>
+        </field>
+    </record>
+
+    <!-- Embedded List View for Custom Subrequirement Lines -->
+    <record id="view_project_custom_subrequirement_line_embedded" model="ir.ui.view">
+        <field name="name">project.custom.subrequirement.line.embedded</field>
+        <field name="model">project.custom.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="order" widget="handle"/>
+                <field name="name"/>
+                <field name="department_id" optional="hide" widget="many2one_tag" readonly="1"/>
+                <field name="estimated_work_days" width="200" sum="Total"/>
+                <field name="complexity" widget="priority" width="80"/>
+                <button name="open_form" type="object" icon="fa-edit" title="Modifier"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Department-specific Embedded List View for Custom Subrequirement Lines -->
+    <record id="view_project_custom_subrequirement_line_department_embedded" model="ir.ui.view">
+        <field name="name">project.custom.subrequirement.line.department.embedded</field>
+        <field name="model">project.custom.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="order" widget="handle"/>
+                <field name="name"/>
+                <field name="department_id" optional="hide" widget="many2one_tag" readonly="1"/>
+                <field name="estimated_work_days" width="200" sum="Total"/>
+                <field name="complexity" widget="priority" width="80"/>
+                <button name="open_form" type="object" icon="fa-edit" title="Modifier"/>
+            </list>
+        </field>
+    </record>
+</odoo> 

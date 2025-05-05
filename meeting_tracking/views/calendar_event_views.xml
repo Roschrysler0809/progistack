@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add project fields to form view -->
+    <record id="view_calendar_event_form_inherited" model="ir.ui.view">
+        <field name="name">calendar.event.form.inherited</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <!-- Add fields to a new group after the name field -->
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <group>
+                    <field name="project_id"/>
+                </group>
+            </xpath>
+
+            <!-- Add meeting status and compte rendu sent fields -->
+            <xpath expr="//notebook" position="before">
+                <group>
+                    <group>
+                        <field name="meeting_type" readonly="1"/>
+                        <field name="meeting_location"/>
+                        <field name="meeting_status" readonly="1" widget="badge"
+                               decoration-warning="meeting_status == 'pending'"
+                               decoration-success="meeting_status == 'validated'"
+                               decoration-info="meeting_status == 'completed'"
+                               icon="meeting_status == 'pending' ? 'fa-clock-o' : (meeting_status == 'completed' ? 'fa-check' : '')"/>
+                    </group>
+                    <group>
+                        <div class="d-flex align-items-center" style="column-gap: 20px;">
+                            <div class="d-flex align-items-center" style="gap: 10px;">
+                                <field name="cr_kanban_state" widget="state_selection" class="o_status"/>
+                                <field name="compte_rendu_status" nolabel="1"
+                                       style="min-width: 150px;"
+                                       decoration-success="compte_rendu_status == 'sent'"
+                                       decoration-danger="compte_rendu_status == 'not_sent'"/>
+                            </div>
+                            <button name="action_send_compte_rendu" string="Envoyer CR" type="object"
+                                    class="btn btn-secondary" icon="fa-envelope-o"/>
+                        </div>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add compte rendu attachments -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Compte-rendu" name="compte_rendu">
+                    <group>
+                        <field name="compte_rendu_attachment_ids" widget="many2many_binary" string="Pièces jointes"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add project fields to calendar view -->
+    <record id="view_calendar_event_calendar_inherited" model="ir.ui.view">
+        <field name="name">calendar.event.calendar.inherited</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="arch" type="xml">
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="color">project_id</attribute>
+            </xpath>
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="project_id"/>
+                <field name="meeting_status"/>
+                <field name="compte_rendu_status"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add project fields to list view -->
+    <record id="view_calendar_event_tree_inherited" model="ir.ui.view">
+        <field name="name">calendar.event.tree.inherited</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_id"/>
+            </xpath>
+            <xpath expr="//list" position="inside">
+                <field name="meeting_type" string="Type" width="70px" optional="show"/>
+                <field name="meeting_location" optional="show"/>
+                <field name="meeting_status" optional="show" widget="badge"
+                       decoration-warning="meeting_status == 'pending'"
+                       decoration-success="meeting_status == 'validated'"
+                       decoration-info="meeting_status == 'completed'"
+                       icon="meeting_status == 'pending' ? 'fa-clock-o' : (meeting_status == 'completed' ? 'fa-check' : '')"/>
+                <field name="compte_rendu_status" optional="show" decoration-success="compte_rendu_status == 'sent'"
+                       decoration-danger="compte_rendu_status == 'not_sent'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add project field to search view -->
+    <record id="view_calendar_event_search_inherited" model="ir.ui.view">
+        <field name="name">calendar.event.search.inherited</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="project_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='mymeetings']" position="after">
+                <filter string="Mes Projets" name="my_projects"
+                        domain="[('project_id.user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Avec CR" name="with_cr"
+                        domain="[('compte_rendu_status', '=', 'sent')]"/>
+                <filter string="Sans CR" name="without_cr"
+                        domain="[('compte_rendu_status', '=', 'not_sent')]"/>
+                <separator/>
+                <filter string="Réunions Internes" name="internal_meetings"
+                        domain="[('meeting_type', '=', 'internal')]"/>
+                <filter string="Réunions Externes" name="external_meetings"
+                        domain="[('meeting_type', '=', 'external')]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="Projet" name="group_by_project" context="{'group_by': 'project_id'}"/>
+                <filter string="Type de réunion" name="group_by_meeting_type" context="{'group_by': 'meeting_type'}"/>
+                <filter string="Statut" name="group_by_meeting_status" context="{'group_by': 'meeting_status'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Custom list view for project meetings with expanded groups -->
+    <record id="view_project_meetings_list" model="ir.ui.view">
+        <field name="name">calendar.event.list.project.meetings</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <list expand="1" default_group_by="project_id">
+                <field name="project_id"/>
+                <field name="name"/>
+                <field name="meeting_type" string="Type" width="70px" optional="show"/>
+                <field name="meeting_location" optional="show"/>
+                <field name="start"/>
+                <field name="stop"/>
+                <field name="duration"/>
+                <field name="partner_ids" widget="many2many_tags" options="{'color_field': 'color'}" string="Attendees"
+                       width="300px"/>
+                <field name="description" string="Project Description"/>
+                <field name="meeting_status" optional="show" widget="badge"
+                       decoration-warning="meeting_status == 'pending'"
+                       decoration-success="meeting_status == 'validated'"
+                       decoration-info="meeting_status == 'completed'"
+                       icon="meeting_status == 'pending' ? 'fa-clock-o' : (meeting_status == 'completed' ? 'fa-check' : '')"/>
+                <field name="compte_rendu_status" optional="show" decoration-success="compte_rendu_status == 'sent'"
+                       decoration-danger="compte_rendu_status == 'not_sent'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Actions for Project Meetings -->
+    <record id="action_project_meetings" model="ir.actions.act_window">
+        <field name="name">Réunions de Projet</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="domain">[('project_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune réunion de projet trouvée
+            </p>
+            <p>
+                Planifiez votre première réunion de projet
+            </p>
+        </field>
+    </record>
+
+    <!-- Link the custom list view to the action -->
+    <record id="action_project_meetings_list_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_project_meetings_list"/>
+        <field name="act_window_id" ref="action_project_meetings"/>
+    </record>
+</odoo> 

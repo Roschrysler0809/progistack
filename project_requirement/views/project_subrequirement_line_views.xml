@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_subrequirement_line_list" model="ir.ui.view">
+        <field name="name">project.subrequirement.line.list</field>
+        <field name="model">project.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="order" widget="handle"/>
+                <field name="subrequirement_id"/>
+                <field name="department_id" width="150" widget="many2one_tag"/>
+                <field name="estimated_work_days" width="200" sum="Total"
+                       decoration-bf="is_modified" decoration-info="is_modified"/>
+                <field name="complexity" widget="priority" width="80"/>
+                <button name="action_revert_estimated_work_days"
+                        type="object"
+                        icon="fa-undo"
+                        title="Rétablir la valeur originale"
+                        confirm="Êtes-vous sûr de vouloir rétablir la valeur originale de charge (Jours)?"
+                        invisible="not is_modified"
+                        width="40"/>
+                <field name="is_modified" widget="boolean_toggle" width="50"
+                       nolabel="1" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_subrequirement_line_form" model="ir.ui.view">
+        <field name="name">project.subrequirement.line.form</field>
+        <field name="model">project.subrequirement.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de sous-exigence">
+                <sheet>
+                    <!-- Title section with subrequirement_id as title -->
+                    <div class="oe_title w-100" style="margin-top: 0; width: 100%;">
+                        <h1 style="width: 100%; margin-bottom: 16px;">
+                            <field name="subrequirement_id" placeholder="Sous-exigence" class="w-100"
+                                   domain="[('project_type', '!=', 'etude_chiffrage')]"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
+                        </h1>
+                    </div>
+
+                    <!-- Department field below the title -->
+                    <div class="mb-3">
+                        <label for="department_id" class="text-muted">Département:</label>
+                        <field name="department_id" class="ms-2" readonly="1"/>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="requirement_line_id" invisible="1"/>
+                            <field name="estimated_work_days" string="Charge (Jours)" on_change="1"/>
+                            <field name="complexity" widget="priority"/>
+                            <field name="order" string="Ordre"/>
+                            <field name="is_modified" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View Actions -->
+    <record id="action_project_subrequirement_line" model="ir.actions.act_window">
+        <field name="name">Lignes de sous-exigence</field>
+        <field name="res_model">project.subrequirement.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo> 

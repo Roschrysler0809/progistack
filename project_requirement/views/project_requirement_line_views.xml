@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_requirement_line_list" model="ir.ui.view">
+        <field name="name">project.requirement.line.list</field>
+        <field name="model">project.requirement.line</field>
+        <field name="arch" type="xml">
+            <list default_order="order asc, planned_end_date asc" editable="bottom" create="0">
+                <!-- Requirement field with our custom widget -->
+                <field name="requirement_id" string="Exigence" widget="requirement_line_text"
+                       options="{'no_create': True}"/>
+                <field name="description" column_invisible="1"/>
+                <field name="type" width="150"/>
+                <field name="department_id" optional="show" widget="many2one_tag"/>
+                <field name="estimated_work_days" width="120" sum="Total" class="text-right"
+                       decoration-bf="has_modified_subrequirements"
+                       decoration-info="has_modified_subrequirements"/>
+                <field name="estimated_days" width="120" sum="Total" class="text-right"/>
+                <field name="has_modified_subrequirements" widget="boolean_toggle" width="50"
+                       nolabel="1" optional="hide"/>
+                <field name="planned_start_date" width="150" class="text-right"/>
+                <field name="planned_end_date" width="150" class="text-right"/>
+                <field name="unit_price" width="120" sum="Total" class="text-right" optional="hide"/>
+                <field name="amount" width="120" sum="Total" class="text-right" optional="hide"/>
+                <field name="order" width="70"/>
+                <button name="action_move_up" type="object" title="Monter"
+                        icon="fa-arrow-up" class="text-success"
+                        invisible="context.get('hide_move_buttons') or is_first_order or project_stage == 'project'"
+                        column_invisible="1"/>
+                <button name="action_move_down" type="object" title="Descendre"
+                        icon="fa-arrow-down" class="text-success"
+                        invisible="context.get('hide_move_buttons') or (is_last_order and not has_parallel_requirements) or project_stage == 'project'"
+                        column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Reusable embedded list view for department requirements -->
+    <record id="view_project_requirement_line_department_embedded" model="ir.ui.view">
+        <field name="name">project.requirement.line.department.embedded</field>
+        <field name="model">project.requirement.line</field>
+        <field name="arch" type="xml">
+            <list default_order="order asc, planned_end_date asc" editable="bottom" create="0">
+                <field name="project_stage" column_invisible="1"/>
+                <!-- Edit button -->
+                <button name="action_open_form" string="Editer" type="object"
+                        class="btn btn-primary" icon="fa-pencil-square-o" width="80"
+                        column_invisible="context.get('parent_stage') == 'project' and (context.get('parent_project_type') != 'etude_chiffrage' or context.get('parent_implementation_project_id'))"/>
+                <!-- Regular fields -->
+                <field name="requirement_id" string="Exigence" widget="requirement_line_text"
+                       options="{'no_create': True}"
+                       domain="[('department_id', 'in', project_department_ids)]"/>
+                <field name="description" column_invisible="1"/>
+                <field name="type" width="150"/>
+                <field name="department_id" optional="show" widget="many2one_tag"/>
+                <field name="estimated_work_days" width="120" sum="Total" class="text-right"
+                       decoration-bf="has_modified_subrequirements"
+                       decoration-info="has_modified_subrequirements"/>
+                <field name="unit_price" width="120" sum="Total" class="text-right" optional="hide"/>
+                <field name="amount" width="120" sum="Total" class="text-right" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_requirement_line_form" model="ir.ui.view">
+        <field name="name">project.requirement.line.form</field>
+        <field name="model">project.requirement.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne d'exigence">
+                <sheet>
+                    <!-- Title section with requirement_id as title -->
+                    <div class="oe_title w-100" style="margin-top: 0; width: 100%;">
+                        <h1 style="width: 100%; margin-bottom: 16px;">
+                            <field name="requirement_id"
+                                   domain="[('department_id', 'in', project_department_ids)]"
+                                   placeholder="Exigence" class="w-100"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   readonly="id"
+                                   on_change="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- Description field below the title -->
+                    <div class="mb-3">
+                        <field name="description" placeholder="Description personnalisée de l'exigence..."
+                               class="w-100"/>
+                    </div>
+
+                    <!-- Department field below the title -->
+                    <div class="mb-3">
+                        <label for="department_id" class="text-muted">Département:</label>
+                        <field name="department_id" readonly="1" class="ms-2"/>
+                    </div>
+
+                    <!-- Requirement details -->
+                    <group>
+                        <group>
+                            <field name="project_id" options="{'no_create': True, 'no_open': True}" invisible="1"/>
+                            <field name="type" invisible="1"/>
+                            <field name="order" invisible="1"
+                                   help="Détermine l'ordre d'exécution. Utiliser les flèches ↑↓ dans la vue liste est recommandé pour éviter les exécutions en parallèle."/>
+                        </group>
+                        <group>
+                            <label for="estimated_work_days">Charge (Jours)</label>
+                            <div>
+                                <field name="estimated_work_days" class="oe_inline me-2 h4 fw-bold m-0"/>
+                            </div>
+                            <label for="estimated_days">Durée calendaire</label>
+                            <div>
+                                <field name="estimated_days" class="oe_inline me-2 h4 fw-bold m-0" invisible="1"/>
+                            </div>
+                            <field name="planned_start_date" invisible="1"/>
+                            <field name="planned_end_date" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Besoins, Challenges and Solutions -->
+                    <group>
+                        <field name="besoins" placeholder="Besoins liés à cette exigence..."/>
+                    </group>
+                    <group>
+                        <field name="challenges" placeholder="Challenges liés à cette exigence..."/>
+                    </group>
+                    <group>
+                        <field name="solutions" placeholder="Solutions proposées pour cette exigence..."/>
+                    </group>
+
+                    <!-- Subrequirements tab -->
+                    <notebook class="mt-4">
+                        <page string="Sous-exigences" name="subrequirements">
+                            <!-- Clear button at the top -->
+                            <div class="d-flex justify-content-end mb-2">
+                                <button name="action_clear_subrequirement_lines" type="object"
+                                        class="btn btn-link text-danger p-2"
+                                        confirm="Êtes-vous sûr de vouloir supprimer toutes les sous-exigences? Cette action ne peut pas être annulée."
+                                        invisible="not subrequirement_line_ids or (project_stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id))">
+                                    <i class="fa fa-trash-o me-1" role="img" aria-label="Retirer"/>
+                                    <span>Retirer toutes les sous-exigences</span>
+                                </button>
+                            </div>
+                            <!-- Subrequirements table -->
+                            <field name="subrequirement_line_ids"
+                                   readonly="project_stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)"
+                                   context="{
+                                       'default_requirement_id': requirement_id,
+                                       'default_project_type': 'implementation',
+                                       'from_project': True
+                                   }">
+                                <list decoration-muted="not display_name" editable="bottom">
+                                    <field name="order" widget="handle"
+                                           invisible="parent.project_stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id)"/>
+                                    <field name="subrequirement_id"
+                                           domain="[('requirement_id', '=', parent.requirement_id), ('project_type', '!=', 'etude_chiffrage')]"
+                                           context="{
+                                               'default_requirement_id': parent.requirement_id,
+                                               'default_project_type': 'implementation',
+                                               'from_project': True
+                                           }"
+                                           placeholder="Sous-exigence"/>
+                                    <field name="department_id" optional="hide" widget="many2one_tag" readonly="1"/>
+                                    <field name="estimated_work_days" width="200" sum="Total"
+                                           decoration-bf="is_modified" decoration-info="is_modified"
+                                           on_change="1"/>
+                                    <field name="complexity" widget="priority" width="80"/>
+                                    <button name="action_revert_estimated_work_days"
+                                            type="object"
+                                            icon="fa-undo"
+                                            title="Rétablir la valeur originale"
+                                            confirm="Êtes-vous sûr de vouloir rétablir la valeur originale de charge (Jours)?"
+                                            invisible="not is_modified or (parent.project_stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id))"
+                                            width="40"/>
+                                    <field name="is_modified" widget="boolean_toggle" width="50"
+                                           nolabel="1" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- View Actions -->
+    <record id="action_project_requirement_line" model="ir.actions.act_window">
+        <field name="name">Lignes d'exigence</field>
+        <field name="res_model">project.requirement.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo> 

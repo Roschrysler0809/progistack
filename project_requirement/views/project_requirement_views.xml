@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- List view -->
+        <record id="view_project_requirement_list" model="ir.ui.view">
+            <field name="name">project.requirement.list</field>
+            <field name="model">project.requirement</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="type"/>
+                    <field name="department_id"/>
+                    <field name="estimated_work_days" width="200"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form view -->
+        <record id="view_project_requirement_form" model="ir.ui.view">
+            <field name="name">project.requirement.form</field>
+            <field name="model">project.requirement</field>
+            <field name="arch" type="xml">
+                <form>
+                    <div class="oe_form_sheet_width d-flex">
+                        <div class="flex-grow-1 pe-4">
+                            <sheet>
+                                <!-- Name -->
+                                <div class="oe_title">
+                                    <h1>
+                                        <field name="name" placeholder="Nom de l'exigence"/>
+                                    </h1>
+                                </div>
+                                <!-- Fields -->
+                                <group>
+                                    <group>
+                                        <field name="type"/>
+                                        <field name="department_id" readonly="not department_can_change"/>
+                                        <field name="department_can_change" invisible="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="estimated_work_days" width="200" string="Total Charge (Jours):"/>
+                                    </group>
+                                </group>
+                                <!-- Subrequirements table -->
+                                <notebook>
+                                    <page string="Sous-exigences">
+                                        <field name="subrequirement_ids"
+                                               domain="[('project_type', '!=', 'etude_chiffrage')]"
+                                               context="{
+                                                    'default_requirement_id': id,
+                                                    'default_project_type': 'implementation',
+                                                    'from_requirement': True
+                                               }">
+                                            <list editable="bottom">
+                                                <field name="sequence" widget="handle"/>
+                                                <field name="description"/>
+                                                <field name="department_id" optional="hide"/>
+                                                <field name="subrequirement_type"/>
+                                                <field name="project_type"/>
+                                                <field name="estimated_work_days" width="200" string="Charge (Jours)"/>
+                                                <field name="complexity" widget="priority" width="60"/>
+                                            </list>
+                                        </field>
+                                    </page>
+                                </notebook>
+                            </sheet>
+                        </div>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search view -->
+        <record id="view_project_requirement_search" model="ir.ui.view">
+            <field name="name">project.requirement.search</field>
+            <field name="model">project.requirement</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="display_name"/>
+                    <field name="name"/>
+                    <field name="department_id"/>
+                    <filter string="Exigence Interne" name="type_internal" domain="[('type', '=', 'internal')]"/>
+                    <filter string="Exigence Externe" name="type_external" domain="[('type', '=', 'external')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Département" name="department" domain="[]"
+                                context="{'group_by': 'department_id'}"/>
+                        <filter string="Type" name="type" domain="[]" context="{'group_by': 'type'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- View Actions -->
+        <record id="action_project_requirement" model="ir.actions.act_window">
+            <field name="name">Exigences</field>
+            <field name="res_model">project.requirement</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_project_requirement_search"/>
+        </record>
+    </data>
+</odoo> 

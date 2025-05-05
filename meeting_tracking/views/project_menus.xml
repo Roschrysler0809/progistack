@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Project Meetings menu in main Project Menu -->
+    <menuitem id="menu_project_meetings_root"
+              name="Réunions"
+              parent="project.menu_main_pm"
+              sequence="4"/>
+
+    <menuitem id="menu_project_meetings"
+              name="Réunions de projets"
+              action="meeting_tracking.action_project_meetings"
+              parent="menu_project_meetings_root"
+              sequence="10"/>
+</odoo> 

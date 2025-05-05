@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form_inherit" model="ir.ui.view">
+        <field name="name">project.task.form.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- Show the magic button of the linked requirement -->
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_requirement_line" type="object" class="oe_stat_button" icon="fa-list"
+                        invisible="not requirement_id">
+                    <field name="requirement_id" widget="statinfo" string="Exigence"/>
+                </button>
+            </xpath>
+
+            <!-- Make deadline visible by default in the subtask list -->
+            <xpath expr="//field[@name='child_ids']/list/field[@name='date_deadline']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+
+            <!-- Hide allocated hours by default in the subtask list -->
+            <xpath expr="//field[@name='child_ids']/list/field[@name='allocated_hours']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- Make allocated_hours readonly when there's a requirement with workload > 0 -->
+            <xpath expr="//field[@name='allocated_hours']" position="attributes">
+                <attribute name="readonly">requirement_line_id or custom_requirement_line_id</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add search view for subtasks filtering -->
+    <record id="view_task_search_with_subtasks" model="ir.ui.view">
+        <field name="name">project.task.search.with.subtasks</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='message_needaction']" position="after">
+                <filter string="Tâches principales" name="parent_tasks" domain="[('parent_id', '=', False)]"/>
+                <filter string="Sous-tâches" name="subtasks" domain="[('parent_id', '!=', False)]"/>
+                <filter string="Grouper par hiérarchie" name="grouped_by_subtasks" context="{'group_by': 'parent_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Change "Temps alloué" to "Temps alloué (heures)" in task form view -->
+    <record id="view_task_form_inherit_allocated_hours_label" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.allocated.hours.label</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_form2_inherited"/>
+        <field name="arch" type="xml">
+            <xpath expr="//label[@for='allocated_hours']" position="attributes">
+                <attribute name="string">Temps alloué (heures)</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Change "Temps alloué" to "Temps alloué (heures)" in task list view -->
+    <record id="view_task_tree_inherit_allocated_hours_label" model="ir.ui.view">
+        <field name="name">project.task.list.inherit.allocated.hours.label</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="hr_timesheet.view_task_tree2_inherited"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='allocated_hours']" position="attributes">
+                <attribute name="string">Temps alloué (heures)</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

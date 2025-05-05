@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="crm_lead_view_form_inherit_project_requirement" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.project.requirement</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Add the next_step field below Tags field -->
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="next_step" readonly="project_id != False"/>
+                <field name="implementation_category" invisible="next_step != 'implementation'"
+                       required="next_step == 'implementation'" readonly="project_id != False"/>
+                <field name="department_type" invisible="next_step != 'implementation'"
+                       required="next_step == 'implementation'"
+                       readonly="project_id != False or is_next_step_evolution"/>
+                <field name="etude_chiffrage_category" invisible="next_step != 'etude_chiffrage'"
+                       required="next_step == 'etude_chiffrage'" readonly="project_id != False"/>
+                <field name="project_id" readonly="1" widget="many2one_tag" options="{'no_create': True}"
+                       invisible="not project_id"/>
+                <div class="mt-3"
+                     invisible="type == 'lead' or probability == 0 and not active or project_id or not next_step">
+                    <button string="Créer le projet" name="action_create_project" type="object"
+                            class="btn btn-primary btn-lg w-100" data-hotkey="p"
+                            title="Créer un nouveau projet"/>
+                </div>
+            </xpath>
+
+            <!-- Add Project stat button -->
+            <xpath expr="//button[@name='action_schedule_meeting']" position="after">
+                <button class="oe_stat_button" type="object"
+                        name="action_view_project" icon="fa-tasks"
+                        invisible="not project_id or type == 'lead'">
+                    <div class="o_stat_info">
+                        <field name="project_id" widget="statinfo" string="Projet"/>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Hide quotation buttons - inherit from sale_crm view -->
+    <record id="crm_lead_view_hide_quotation_buttons" model="ir.ui.view">
+        <field name="name">crm.lead.hide.quotation.buttons</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Hide "Nouveau devis" button -->
+            <xpath expr="//button[contains(@name, 'action_sale_quotations_new')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide "Devis" stat button -->
+            <!-- <xpath expr="//button[contains(@name, 'action_view_sale_quotation')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+
+            <!-- Hide "Commandes" stat button -->
+            <!-- <xpath expr="//button[contains(@name, 'action_view_sale_order')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> -->
+        </field>
+    </record>
+
+    <!-- Hide "Nouveau" button in the Devis dropdown menu -->
+    <record id="crm_lead_view_hide_new_quotation_menu_button" model="ir.ui.view">
+        <field name="name">crm.lead.hide.new.quotation.menu.button</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_sale_quotation']" position="attributes">
+                <attribute name="context">{'create': False}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Email template for meeting report -->
+        <record id="email_template_meeting_compte_rendu" model="mail.template">
+            <field name="name">Compte-rendu de Réunion</field>
+            <field name="model_id" ref="calendar.model_calendar_event"/>
+            <field name="subject">Compte-rendu: {{ object.name }}</field>
+            <field name="email_from">{{ object.user_id.email_formatted }}</field>
+            <field name="email_to">{{ ','.join([attendee.email for attendee in object.attendee_ids if (not
+                attendee.partner_id.email or attendee.partner_id.email != attendee.email)]) }}
+            </field>
+            <field name="partner_to">{{ ','.join([str(attendee.partner_id.id) for attendee in object.attendee_ids if
+                attendee.partner_id.email and attendee.partner_id.email == attendee.email]) }}
+            </field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Bonjour,
+                        <br/>
+                        <br/>
+                        Veuillez trouver ci-joint le compte-rendu de notre réunion:
+                        <br/>
+                        <br/>
+                        <b>Sujet:</b>
+                        <t t-out="object.name"/>
+                        <br/>
+                        <b>Date:</b>
+                        <t t-out="format_datetime(object.start, tz=user.tz, dt_format='medium')"/>
+                        <br/>
+                        <t t-if="object.location">
+                            <b>Lieu:</b>
+                            <t t-out="object.location"/>
+                            <br/>
+                        </t>
+                        <t t-if="object.project_id">
+                            <b>Projet:</b>
+                            <t t-out="object.project_id.name"/>
+                            <br/>
+                        </t>
+                        <br/>
+                        <hr/>
+                        <p>
+                            <b>Résumé de la réunion:</b>
+                        </p>
+                        <t t-if="not is_html_empty(object.description)">
+                            <t t-out="object.description"/>
+                        </t>
+                        <t t-else="">
+                            Pas de description fournie.
+                        </t>
+                    </p>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                        Cordialement,
+                        <br/>
+                        <t t-if="not is_html_empty(object.user_id.signature)">
+                            <t t-out="object.user_id.signature"/>
+                        </t>
+                    </p>
+                </div>
+            </field>
+            <field name="description">Envoyé aux participants avec le compte-rendu de la réunion</field>
+            <field name="scheduled_date" eval="False"/>
+        </record>
+    </data>
+</odoo> 

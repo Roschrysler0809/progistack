@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List view -->
+    <record id="view_project_profile_line_list" model="ir.ui.view">
+        <field name="name">project.profile.line.list</field>
+        <field name="model">project.profile.line</field>
+        <field name="arch" type="xml">
+            <list string="Profils" editable="bottom">
+                <field name="role_id" placeholder="Rôle" required="1"/>
+                <field name="daily_rate" string="Taux journalier" widget="monetary"
+                       options="{'currency_field': 'currency_id'}" width="250"/>
+                <field name="involvement" string="Implication" width="150"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="involvement_percentage" string="% Implication" widget="percentage"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_project_profile_line_form" model="ir.ui.view">
+        <field name="name">project.profile.line.form</field>
+        <field name="model">project.profile.line</field>
+        <field name="arch" type="xml">
+            <form string="Profil">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="project_id" invisible="context.get('hide_project_id', False)"
+                                   readonly="context.get('default_project_id')"/>
+                            <field name="role_id" required="1"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="daily_rate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="involvement"/>
+                            <field name="involvement_percentage" widget="percentage" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action to open profile lines in edit mode -->
+    <record id="action_open_profile_list" model="ir.actions.act_window">
+        <field name="name">Ajouter un profil</field>
+        <field name="res_model">project.profile.line</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_project_id': active_id, 'form_view_initial_mode': 'edit'}</field>
+    </record>
+
+    <!-- General action for profile lines -->
+    <record id="action_project_profile_line" model="ir.actions.act_window">
+        <field name="name">Profils</field>
+        <field name="res_model">project.profile.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo> 

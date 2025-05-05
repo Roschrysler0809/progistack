@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_custom_requirement_line_list" model="ir.ui.view">
+        <field name="name">project.custom.requirement.line.list</field>
+        <field name="model">project.custom.requirement.line</field>
+        <field name="arch" type="xml">
+            <list default_order="order asc, planned_end_date asc" editable="bottom">
+                <field name="name" string="Exigence"/>
+                <field name="type" width="150"/>
+                <field name="department_id" optional="show" widget="many2one_tag" readonly="1"/>
+                <field name="estimated_work_days" width="120" sum="Total" class="text-right"/>
+                <field name="estimated_days" width="120" sum="Total" class="text-right"/>
+                <field name="planned_start_date" width="150" class="text-right"/>
+                <field name="planned_end_date" width="150" class="text-right"/>
+                <field name="order" width="70"/>
+                <button name="action_open_form" type="object" icon="fa-edit" title="Modifier"
+                        invisible="can_be_edited == False"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Reusable embedded list view for department requirements -->
+    <record id="view_project_custom_requirement_line_department_embedded" model="ir.ui.view">
+        <field name="name">project.custom.requirement.line.department.embedded</field>
+        <field name="model">project.custom.requirement.line</field>
+        <field name="arch" type="xml">
+            <list default_order="order asc, planned_end_date asc" editable="bottom">
+                <field name="project_stage" column_invisible="1"/>
+                <!-- Edit button -->
+                <button name="action_open_form" string="Editer" type="object"
+                        class="btn btn-primary" icon="fa-pencil-square-o" width="80"
+                        column_invisible="context.get('parent_stage') == 'project' and (context.get('parent_project_type') != 'etude_chiffrage' or context.get('parent_implementation_project_id'))"/>
+                <!-- Regular fields -->
+                <field name="name" string="Exigence"/>
+                <field name="type" width="150"/>
+                <field name="department_id" optional="show" widget="many2one_tag" readonly="1"/>
+                <field name="estimated_work_days" width="120" sum="Total" class="text-right"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_custom_requirement_line_form" model="ir.ui.view">
+        <field name="name">project.custom.requirement.line.form</field>
+        <field name="model">project.custom.requirement.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne d'exigence personnalisée">
+                <sheet>
+                    <!-- Title section with name as title -->
+                    <div class="oe_title w-100" style="margin-top: 0; width: 100%;">
+                        <h1 style="width: 100%; margin-bottom: 16px;">
+                            <field name="name" placeholder="Nom de l'exigence..." class="w-100"/>
+                        </h1>
+                    </div>
+
+                    <!-- Project field (hidden but required) -->
+                    <field name="project_id" invisible="1" readonly="1"/>
+
+                    <!-- Department field below the title -->
+                    <div class="mb-3">
+                        <label for="department_id" class="text-muted">Département:</label>
+                        <field name="department_id" class="ms-2" readonly="1"/>
+                    </div>
+
+                    <!-- Requirement details -->
+                    <group>
+                        <group>
+                            <field name="order"
+                                   help="Détermine l'ordre d'exécution et les dates planifiées" invisible="1"/>
+                            <field name="type"/>
+                        </group>
+                        <group>
+                            <label for="estimated_work_days">Charge (Jours)</label>
+                            <div>
+                                <field name="estimated_work_days" readonly="1" class="oe_inline me-2 h4 fw-bold m-0"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Besoins, Challenges and Solutions -->
+                    <group>
+                        <field name="besoins" placeholder="Besoins liés à cette exigence..."/>
+                    </group>
+                    <group>
+                        <field name="challenges" placeholder="Challenges liés à cette exigence..."/>
+                    </group>
+                    <group>
+                        <field name="solutions" placeholder="Solutions proposées pour cette exigence..."/>
+                    </group>
+
+                    <!-- Subrequirements tab -->
+                    <notebook class="mt-4">
+                        <page string="Sous-exigences" name="subrequirements">
+                            <!-- Clear button at the top -->
+                            <div class="d-flex justify-content-end mb-2">
+                                <button name="action_clear_subrequirement_lines" type="object"
+                                        class="btn btn-link text-danger p-2"
+                                        confirm="Êtes-vous sûr de vouloir supprimer toutes les sous-exigences? Cette action ne peut pas être annulée."
+                                        invisible="not custom_subrequirement_line_ids or (project_stage == 'project' and project_type != 'etude_chiffrage')">
+                                    <i class="fa fa-trash-o me-1" role="img" aria-label="Retirer"/>
+                                    <span>Retirer toutes les sous-exigences</span>
+                                </button>
+                            </div>
+                            <!-- Subrequirements table -->
+                            <field name="custom_subrequirement_line_ids"
+                                   readonly="project_stage == 'project' and project_type != 'etude_chiffrage'"
+                                   domain="[('department_id', '=', department_id)]"
+                                   context="{
+                                       'default_department_id': department_id, 
+                                       'default_custom_requirement_line_id': id,
+                                       'from_custom_requirement': True
+                                   }">
+                                <list decoration-muted="not name" editable="bottom">
+                                    <field name="order" widget="handle"
+                                           invisible="parent.project_stage == 'project' and parent.project_type != 'etude_chiffrage'"/>
+                                    <field name="name" placeholder="Sous-exigence" class="w-100"/>
+                                    <field name="department_id" optional="hide" widget="many2one_tag" readonly="1"/>
+                                    <field name="estimated_work_days" width="200" sum="Total"/>
+                                    <field name="complexity" widget="priority" width="80" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_project_custom_requirement_line_search" model="ir.ui.view">
+        <field name="name">project.custom.requirement.line.search</field>
+        <field name="model">project.custom.requirement.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="order"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_department_id" string="Département" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_by_order" string="Ordre" context="{'group_by': 'order'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- View Actions -->
+    <record id="action_project_custom_requirement_line" model="ir.actions.act_window">
+        <field name="name">Lignes d'exigence personnalisées</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">project.custom.requirement.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créez votre première ligne d'exigence personnalisée
+            </p>
+        </field>
+    </record>
+
+    <!-- Embedded List View for Custom Requirement Lines -->
+    <record id="view_project_custom_requirement_line_embedded" model="ir.ui.view">
+        <field name="name">project.custom.requirement.line.embedded</field>
+        <field name="model">project.custom.requirement.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="order" widget="handle"/>
+                <field name="name"/>
+                <field name="estimated_work_days" sum="Total"/>
+                <field name="planned_start_date"/>
+                <field name="planned_end_date"/>
+                <button name="action_open_form" type="object" icon="fa-edit" title="Modifier"
+                        invisible="can_be_edited == False"/>
+            </list>
+        </field>
+    </record>
+</odoo> 

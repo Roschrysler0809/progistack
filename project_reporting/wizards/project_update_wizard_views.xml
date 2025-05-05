@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_project_update_wizard_form" model="ir.ui.view">
+        <field name="name">project.update.wizard.form</field>
+        <field name="model">project.update.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <!-- Project Information -->
+                    <div class="border p-3 mb-3" role="alert">
+                        <strong>Informations du projet:</strong>
+                        <group class="mt-2">
+                            <group>
+                                <field name="project_id" readonly="1"/>
+                                <field name="department_ids" widget="many2many_tags" options="{'color_field': 'color'}"
+                                       readonly="1"/>
+                            </group>
+                        </group>
+                    </div>
+                    <!-- Report Date -->
+                    <div class="mt-3 mb-3">
+                        <h4 class="mb0">Date du rapport</h4>
+                        <div class="mt-2 d-flex align-items-center">
+                            <i class="fa fa-calendar mr-3" style="margin-right: 12px; margin-bottom: 6px;"
+                               title="Calendrier"/>
+                            <field name="report_date" widget="daterange"
+                                   options="{'start_date_field': 'report_date', 'end_date_field': 'report_date_end'}"/>
+                        </div>
+                    </div>
+
+                    <!-- Previous Update Options - Only show if there's a previous update -->
+                    <div class="mt-3 mb-3" invisible="not has_previous_update">
+                        <h4 class="mb0">Options</h4>
+                        <div class="mt-2">
+                            <field name="copy_previous_data"/>
+                            <label for="copy_previous_data" string="Copier les données de la mise à jour précédente"/>
+                            <p class="text-muted mt-2" style="font-size: 0.9em;">
+                                Copie les données de la mise à jour précédente pour éviter de tout ressaisir.
+                            </p>
+                        </div>
+                    </div>
+                </sheet>
+
+                <footer>
+                    <!-- Create Update Button -->
+                    <button string="Créer une mise à jour" name="action_create_update" type="object"
+                            class="btn-primary"/>
+                    <!-- Cancel Button -->
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_project_update_wizard" model="ir.actions.act_window">
+        <field name="name">Créer une mise à jour du projet</field>
+        <field name="res_model">project.update.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="project.model_project_project"/>
+        <field name="binding_view_types">form</field>
+        <field name="domain">[('project_type', '=', 'implementation')]</field>
+        <field name="context">{'default_project_id': active_id}</field>
+    </record>
+</odoo> 

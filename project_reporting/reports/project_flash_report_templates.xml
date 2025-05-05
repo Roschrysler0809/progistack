@@ -1,0 +1,1043 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Styles -->
+    <template id="report_flash_report_styles">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,900;1,900&amp;display=swap');
+
+            /* Global font settings */
+            * {
+            font-family: 'Montserrat', sans-serif;
+            }
+
+            /* Typography */
+            .flash-report-title {
+            color: #3c78d8;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            text-align: left;
+            padding-left: 15px;
+            }
+            .flash-report-subtitle {
+            color: #6aa84f;
+            font-size: 48px;
+            font-weight: bolder;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            }
+            .flash-report-project-title {
+            color: #6aa84f;
+            font-size: 38px;
+            font-weight: bolder;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            }
+            .flash-report-subtitle-small {
+            font-size: 22px;
+            font-weight: bolder;
+            }
+            .flash-report-text {
+            color: #666;
+            font-size: 30px;
+            line-height: 1.3;
+            font-weight: bold;
+            }
+
+            /* Department and LOT title */
+            .flash-report-lot-title {
+            font-size: 1.2em;
+            font-weight: bolder;
+            font-style: italic;
+            color: #0b5394;
+            }
+
+            /* Headers */
+            .flash-report-header {
+            background-color: #d4e4f1; /* Old color: #e6f0ff */
+            padding: 0.5rem 1rem;
+            margin: 0;
+            border-bottom: 1px solid #e9ecef;
+            width: 100%;
+            position: relative;
+            height: 80px;
+            min-height: 80px;
+            max-height: 80px;
+            box-sizing: border-box;
+            }
+            .flash-report-header-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin: 0;
+            height: 100%;
+            }
+            .flash-report-header-row {
+            display: table-row;
+            height: 100%;
+            }
+            .flash-report-header-cell {
+            display: table-cell;
+            vertical-align: middle;
+            }
+            .flash-report-header-cell-title {
+            width: 60%;
+            text-align: left;
+            }
+            .flash-report-header-cell-logo {
+            width: 30%;
+            text-align: right;
+            padding-right: 15px;
+            }
+            .flash-report-header-cell-weather {
+            width: 20%;
+            text-align: right;
+            padding-right: 0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            position: relative;
+            }
+            .flash-report-header-logo {
+            max-height: 64px;
+            min-height: 64px;
+            max-width: 280px;
+            width: auto;
+            object-fit: contain;
+            }
+            .flash-report-weather-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 120px;
+            text-align: center;
+            }
+            .flash-report-weather-section {
+            position: relative;
+            right: 0;
+            width: 120px;
+            }
+            .flash-report-weather-title {
+            color: #666;
+            font-size: 16px;
+            margin: 12px 0 0 0;
+            display: block;
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            }
+            .flash-report-weather-icon {
+            height: 80px;
+            width: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            background-color: white;
+            padding: 12px;
+            display: block;
+            }
+
+            /* Images */
+            .flash-report-logo {
+            max-height: 150px;
+            margin: 3rem 0;
+            }
+
+            /* Content Boxes */
+            .flash-report-box {
+            border: 2px solid #aaa;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 0;
+            height: 100%;
+            min-height: 150px; /* Minimum height for boxes */
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            box-shadow: none;
+            }
+
+            .flash-report-box-header {
+            color: #4285f4;
+            padding: 6px 10px;
+            font-weight: bold;
+            font-size: 20px;
+            flex: 0 0 auto;
+            text-align: center;
+            }
+
+            .flash-report-box-header-success {
+            color: #6AA84F; /* Green color for completed tasks */
+            }
+
+            .flash-report-box-header-warning {
+            color: #f44336; /* Red color for attention points */
+            }
+
+            .flash-report-box-header h4 {
+            margin: 0;
+            font-size: 20px;
+            }
+
+            .flash-report-box-content {
+            padding: 10px 25px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 100px; /* Minimum height for content area */
+            }
+
+            /* Footer */
+            .footer {
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 4px 24px;
+            margin-bottom: 0;
+            }
+            .o_clean_footer {
+            border: none !important;
+            box-shadow: none !important;
+            background: none !important;
+            }
+            .flash-report-footer-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border: none;
+            }
+            .flash-report-footer-row {
+            display: table-row;
+            }
+            .flash-report-footer-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 1rem;
+            border: none;
+            }
+            .flash-report-footer-cell-company {
+            width: 30%;
+            font-size: 34px;
+            font-weight: bold;
+            color: #2a77bb;
+            }
+            .flash-report-footer-cell-slogan {
+            width: 50%;
+            text-align: center;
+            font-size: 18px;
+            color: #478ac4;
+            }
+            .flash-report-footer-cell-page {
+            width: 20%;
+            text-align: right;
+            font-size: 18px;
+            color: #333;
+            }
+
+            /* Layout */
+            .flash-report-page {
+            padding: 0;
+            margin: 0;
+            position: relative;
+            page-break-after: always;
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: transparent;
+            }
+            .flash-report-section {
+            margin-bottom: 0.5rem;
+            }
+            .flash-report-presentation {
+            text-align: center;
+            }
+            .flash-report-content {
+            padding: 0.5rem 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* Force content to take full available height */
+            height: calc(100vh - 180px); /* Adjust based on header/footer heights */
+            }
+
+            /* Layout containers for presentation page */
+            .flash-report-content-main {
+            flex: 0 0 auto;
+            /* Content takes its natural height */
+            }
+
+            .flash-report-content-spacer {
+            flex: 1 0 auto;
+            min-height: 20px;
+            }
+
+            /* Project info section - fixed height */
+            .flash-report-project-info-section {
+            flex: 0 0 auto;
+            }
+
+            /* Table Grid Layout */
+            .flash-report-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0.5rem;
+            table-layout: fixed;
+            margin-bottom: 0;
+            /* Force table to take remaining content height */
+            height: calc(100% - 80px); /* Adjust based on project info section height */
+            }
+
+            .flash-report-table td {
+            padding: 0;
+            vertical-align: top;
+            }
+
+            .flash-report-table-col-left {
+            width: 33.33%;
+            }
+
+            .flash-report-table-col-middle {
+            width: 33.33%;
+            }
+
+            .flash-report-table-col-right {
+            width: 33.33%;
+            }
+
+            .flash-report-table-cell {
+            height: 100%;
+            }
+
+            /* Force table to take available vertical space */
+            .flash-report-table, .flash-report-table tbody {
+            height: 100%;
+            }
+
+            /* Set row heights */
+            .flash-report-table tr.row-top {
+            height: 50%;
+            }
+
+            .flash-report-table tr.row-bottom {
+            height: 50%;
+            }
+
+            /* Project Info Adjustments */
+            .flash-report-project-info {
+            margin-bottom: 0.25rem;
+            }
+
+            .flash-report-week-header-small {
+            padding: 4px 35px;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            color: white;
+            min-width: 350px;
+            display: inline-block;
+            text-align: center;
+            }
+
+            /* Row and column layout */
+            .flash-report-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -0.5rem;
+            }
+            .flash-report-col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0.5rem;
+            }
+
+            /* Fix for right column */
+            .col-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0.5rem;
+            }
+
+            .flash-report-week-header {
+            background-color: #4285f4;
+            color: white;
+            padding: 8px 40px;
+            border-radius: 4px;
+            margin: 2rem 0;
+            display: inline-block;
+            font-size: 32px;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-width: 650px;
+            text-align: center;
+            }
+            .flash-report-project-info {
+            font-size: 32px;
+            color: #6aa84f;
+            font-weight: bolder;
+            margin: 0.25rem 0;
+            }
+            .flash-report-project-info span {
+            font-weight: bolder;
+            }
+
+            /* Lot Cards Layout Components */
+            .lot-cards-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            min-height: 220px;
+            }
+
+            .lot-cards-table {
+            border-collapse: separate;
+            border-spacing: 20px;
+            margin: 0 auto;
+            width: auto;
+            table-layout: auto;
+            }
+
+            .lot-cards-table tr {
+            text-align: center;
+            }
+
+            .lot-cards-table td {
+            padding: 0;
+            vertical-align: top;
+            height: 100%;
+            min-width: 300px;
+            max-width: 380px;
+            width: 380px;
+            }
+
+            /* Lot Card Component */
+            .lot-card {
+            width: 390px;
+            height: 300px;
+            border: 1px solid #cccccc;
+            border-radius: 30px;
+            background-color: #f3f3f3;
+            margin: 0 auto;
+            display: table;
+            table-layout: fixed;
+            box-shadow: none;
+            }
+
+            /* Smaller lot cards for when we have more than 3 cards */
+            .lot-card-small {
+            width: 390px;
+            height: 180px;
+            border: 1px solid #cccccc;
+            border-radius: 30px;
+            background-color: #f3f3f3;
+            margin: 0 auto;
+            display: table;
+            table-layout: fixed;
+            box-shadow: none;
+            }
+
+            .lot-card-inner {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0;
+            }
+
+            .lot-card-title {
+            color: #3d85c6;
+            font-size: 30px;
+            font-weight: bold;
+            text-align: center;
+            margin: 0 0 15px 0;
+            padding: 0 30px;
+            }
+
+            .lot-card-departments {
+            font-size: 22px;
+            font-weight: normal;
+            color: #000000;
+            text-align: center;
+            margin: 0;
+            padding: 0 30px;
+            }
+
+            .flash-report-presentation .flash-report-week-header {
+            padding: 10px 30px;
+            margin: 0 0 1.5rem 0;
+            font-size: 28px;
+            }
+
+            /* Department page header styles */
+            .flash-report-department-lot {
+            color: #ff0000;
+            font-size: 42px;
+            font-weight: 900;
+            display: inline-block;
+            margin-left: 10px;
+            text-transform: uppercase;
+            }
+
+            /* Client Logo */
+            .flash-report-client-logo {
+            max-height: 150px;
+            max-width: 400px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            }
+
+            .flash-report-client-logo-section {
+            margin-top: auto;
+            padding-top: 15px;
+            padding-bottom: 15px;
+            text-align: center;
+            }
+        </style>
+    </template>
+
+    <!-- Reusable Components -->
+    <template id="report_company_logo">
+        <img t-att-src="'/web/image/res.company/%s/logo/300x0' % env.company.id"
+             t-att-alt="env.company.name"
+             class="flash-report-header-logo"/>
+    </template>
+
+    <template id="report_client_logo">
+        <t t-if="o and o.project_id and o.project_id.partner_id">
+            <t t-set="client"
+               t-value="o.project_id.partner_id.parent_id if o.project_id.partner_id.parent_id and not o.project_id.partner_id.is_company else o.project_id.partner_id"/>
+            <img t-if="client" t-att-src="'/web/image/res.partner/%s/image_1920/300x0' % client.id"
+                 t-att-alt="client.name"
+                 class="flash-report-client-logo"/>
+        </t>
+    </template>
+
+    <template id="report_flash_report_header">
+        <div class="flash-report-header">
+            <div class="flash-report-header-table">
+                <div class="flash-report-header-row">
+                    <div class="flash-report-header-cell flash-report-header-cell-title">
+                        <h1 class="flash-report-title">
+                            Flash Report
+                        </h1>
+                    </div>
+                    <div class="flash-report-header-cell flash-report-header-cell-logo">
+                        <t t-call="project_reporting.report_company_logo"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flash-report-content">
+            <div class="mb-5">
+                <h2 t-field="o.project_id.name" class="flash-report-subtitle"/>
+                <h3 class="flash-report-text">
+                    <t t-if="o.project_id.project_type == 'implementation'">
+                        <t t-if="o.project_id.implementation_category == 'integration'">
+                            Intégration de l'ERP Odoo
+                        </t>
+                        <t t-elif="o.project_id.implementation_category == 'evolution'">
+                            Evolution de version Odoo
+                        </t>
+                    </t>
+                </h3>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_flash_report_week_header">
+        <div style="text-align: center;">
+            <h3 class="flash-report-week-header">
+                <t t-if="o and o.name">
+                    <t t-out="o.name"/>
+                </t>
+                <t t-else="">
+                    Avancement du projet
+                </t>
+            </h3>
+        </div>
+    </template>
+
+    <template id="report_flash_report_week_header_small">
+        <div style="text-align: left;">
+            <h3 class="flash-report-week-header flash-report-week-header-small">
+                <t t-if="o and o.name">
+                    <t t-out="o.name"/>
+                </t>
+                <t t-else="">
+                    Avancement du projet
+                </t>
+            </h3>
+        </div>
+    </template>
+
+    <template id="report_flash_report_footer">
+        <div class="footer o_clean_footer" style="padding: 8px 32px;">
+            <style>
+                /* Footer specific styles */
+                .footer, .footer * {
+                border: 0 !important;
+                border-width: 0 !important;
+                border-style: none !important;
+                border-color: transparent !important;
+                outline: 0 !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                }
+
+                .footer-table {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                border-collapse: collapse !important;
+                border-spacing: 0 !important;
+                }
+
+                .footer-tr {
+                vertical-align: middle;
+                }
+
+                .footer-td-company {
+                width: 1%;
+                text-align: left;
+                font-size: 24px;
+                font-weight: bold;
+                color: #2a77bb;
+                white-space: nowrap;
+                padding-right: 20px;
+                padding-left: 10px;
+                }
+
+                .footer-td-line {
+                position: relative;
+                }
+
+                .footer-line {
+                position: absolute;
+                top: 50%;
+                left: 0;
+                right: 0;
+                border-top: 1px solid #3c78d8 !important;
+                transform: translateY(-50%);
+                }
+
+                .footer-td-slogan {
+                width: 1%;
+                text-align: right;
+                white-space: nowrap;
+                padding-left: 20px;
+                padding-right: 40px;
+                }
+
+                .footer-slogan {
+                font-size: 16px;
+                color: #478ac4;
+                }
+
+                .footer-td-page {
+                width: 1%;
+                text-align: right;
+                white-space: nowrap;
+                padding-left: 20px;
+                padding-right: 10px;
+                }
+
+                .footer-page {
+                font-size: 22px;
+                color: #333;
+                }
+            </style>
+            <table class="footer-table"
+                   style="border: none !important; box-shadow: none !important; outline: none !important; background: transparent !important;">
+                <tr class="footer-tr"
+                    style="border: none !important; outline: none !important; background: transparent !important;">
+                    <td class="footer-td-company"
+                        style="border: none !important; outline: none !important; background: transparent !important;">
+                        Progistack
+                    </td>
+                    <td class="footer-td-line"
+                        style="border: none !important; outline: none !important; background: transparent !important;">
+                        <div class="footer-line"></div>
+                    </td>
+                    <td class="footer-td-slogan"
+                        style="border: none !important; outline: none !important; background: transparent !important;">
+                        <span class="footer-slogan">
+                            Des logiciels pour les entreprises
+                        </span>
+                    </td>
+                    <td class="footer-td-page"
+                        style="border: none !important; outline: none !important; background: transparent !important;">
+                        <span class="footer-page">
+                            <div class="page"
+                                 style="border: none !important; outline: none !important; background: transparent !important;"/>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <!-- Lot Card Template -->
+    <template id="lot_card_template">
+        <t t-if="lot">
+            <div t-attf-class="lot-card{{ ' lot-card-small' if is_small else '' }}">
+                <div class="lot-card-inner">
+                    <div class="lot-card-title">
+                        <t t-if="lot.name">
+                            <t t-esc="lot.name"/>
+                        </t>
+                        <t t-else="">
+                            <span t-field="lot.name"/>
+                        </t>
+                    </div>
+                    <div class="lot-card-departments" t-if="lot.department_names and lot.department_names != 'Aucun'">
+                        <t t-set="departments" t-value="lot.department_ids"/>
+                        <t t-set="dept_count" t-value="len(departments)"/>
+                        <t t-foreach="departments" t-as="dept">
+                            <t t-if="dept_index == dept_count - 1 and dept_count &gt; 1">
+                                et
+                            </t>
+                            <!-- Use short_name if available, otherwise use name -->
+                            <t t-if="dept.short_name">
+                                <t t-esc="dept.short_name"/>
+                            </t>
+                            <t t-else="">
+                                <t t-esc="dept.name"/>
+                            </t>
+                            <t t-if="dept_index &lt; dept_count - 2">,</t>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Lot Cards Grid Template -->
+    <template id="lot_cards_grid">
+        <div class="lot-cards-wrapper">
+            <table class="lot-cards-table" style="margin: 0 auto;">
+                <t t-if="len(lots) &lt;= 3">
+                    <!-- For 3 or fewer lots, use 1 card per row -->
+                    <tr>
+                        <t t-foreach="lots" t-as="lot">
+                            <td>
+                                <t t-call="project_reporting.lot_card_template">
+                                    <t t-set="is_small" t-value="False"/>
+                                </t>
+                            </td>
+                        </t>
+                    </tr>
+                </t>
+                <t t-else="">
+                    <!-- For 4 or more lots, use 3 cards per row with smaller height -->
+                    <tr>
+                        <t t-foreach="lots[0:3]" t-as="lot">
+                            <td>
+                                <t t-call="project_reporting.lot_card_template">
+                                    <t t-set="is_small" t-value="True"/>
+                                </t>
+                            </td>
+                        </t>
+                    </tr>
+                    <tr t-if="len(lots) > 3">
+                        <t t-foreach="lots[3:6]" t-as="lot">
+                            <td>
+                                <t t-call="project_reporting.lot_card_template">
+                                    <t t-set="is_small" t-value="True"/>
+                                </t>
+                            </td>
+                        </t>
+                    </tr>
+                </t>
+            </table>
+        </div>
+    </template>
+
+    <!-- Main Template -->
+    <template id="report_project_flash_report">
+        <t t-call="web.basic_layout">
+            <style>
+                /* Set the entire document to take the whole page */
+                body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: white !important;
+                height: 100% !important;
+                }
+            </style>
+            <t t-foreach="docs" t-as="o">
+                <t t-set="o" t-value="o.with_context(lang=lang)"/>
+                <!-- Presentation page with white background wrapper -->
+                <div style="background-color: white !important;">
+                    <div class="page flash-report-page flash-report-presentation" style="page-break-after: always;">
+                        <div class="oe_structure"/>
+                        <t t-call="project_reporting.report_flash_report_styles"/>
+
+                        <!-- Header with title and logo -->
+                        <div class="flash-report-header">
+                            <div class="flash-report-header-table">
+                                <div class="flash-report-header-row">
+                                    <div class="flash-report-header-cell flash-report-header-cell-title">
+                                        <h1 class="flash-report-title">
+                                            Flash Report
+                                        </h1>
+                                    </div>
+                                    <div class="flash-report-header-cell flash-report-header-cell-logo">
+                                        <t t-call="project_reporting.report_company_logo"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project info and week header -->
+                        <div class="flash-report-content">
+                            <!-- Main content container -->
+                            <div class="flash-report-content-main">
+                                <!-- Project info and week header -->
+                                <div class="mb-3">
+                                    <h3 class="flash-report-project-title">
+                                        <t t-esc="o.project_id.get_client_company_name()"/>
+                                        -
+                                        <t t-if="o.project_id.project_type == 'implementation'">
+                                            <t t-if="o.project_id.implementation_category == 'integration'">
+                                                Intégration de l'ERP Odoo
+                                            </t>
+                                            <t t-elif="o.project_id.implementation_category == 'evolution'">
+                                                Evolution de version Odoo
+                                            </t>
+                                        </t>
+                                    </h3>
+                                </div>
+
+                                <div class="mt-0">
+                                    <t t-call="project_reporting.report_flash_report_week_header"/>
+                                </div>
+
+                                <!-- Lots and Departments Cards -->
+                                <t t-call="project_reporting.lot_cards_grid">
+                                    <t t-set="lots" t-value="o.project_id.lot_ids"/>
+                                </t>
+                            </div>
+
+                            <!-- Empty space to push logo to bottom -->
+                            <div class="flash-report-content-spacer"
+                                 t-att-style="'height: ' + str(0 if len(o.project_id.lot_ids) > 3 else 120) + 'px;'"></div>
+
+                            <!-- Client logo section -->
+                            <div class="flash-report-client-logo-section">
+                                <t t-call="project_reporting.report_client_logo"/>
+                            </div>
+                        </div>
+
+                        <div class="oe_structure"/>
+                    </div>
+                </div>
+
+                <!-- First, prepare the ordered list of report lines to display -->
+                <t t-if="o.department_type == 'standard'">
+                    <!-- For standard projects, try to get the line for "Tout département confondu" -->
+                    <t t-set="ordered_lines"
+                       t-value="o.project_flash_report_line_ids.filtered(lambda l: l.department == 'Tout département confondu')"/>
+                    <!-- If not found, fallback to the first line if any exist -->
+                    <t t-if="not ordered_lines">
+                        <t t-set="ordered_lines"
+                           t-value="o.project_flash_report_line_ids[0:1] if o.project_flash_report_line_ids else []"/>
+                    </t>
+                </t>
+                <t t-else="">
+                    <!-- For custom projects, create lines ordered by lot -->
+                    <t t-set="ordered_lines" t-value="[]"/>
+                    <t t-foreach="o.project_id.lot_ids.sorted(lambda l: l.lot_number)" t-as="lot">
+                        <t t-if="lot.department_names and lot.department_names != 'Aucun'">
+                            <t t-foreach="lot.department_ids" t-as="dept">
+                                <t t-set="dept_lines"
+                                   t-value="o.project_flash_report_line_ids.filtered(lambda l: l.department == dept.name)"/>
+                                <t t-if="dept_lines">
+                                    <!-- Add current department and lot to each line for reference -->
+                                    <t t-foreach="dept_lines.sorted(lambda l: l.lot_number)" t-as="dept_line">
+                                        <t t-set="dept_line_dict"
+                                           t-value="dict(line=dept_line, department=dept, lot=lot)"/>
+                                        <t t-set="ordered_lines" t-value="ordered_lines + [dept_line_dict]"/>
+                                    </t>
+                                </t>
+                            </t>
+                        </t>
+                    </t>
+                </t>
+
+                <!-- Now generate the report pages using the ordered lines -->
+                <t t-foreach="ordered_lines" t-as="line_item">
+                    <t t-if="o.department_type == 'standard'">
+                        <t t-set="curr_line" t-value="line_item"/>
+                        <t t-set="curr_dept" t-value="False"/>
+                        <t t-set="curr_lot" t-value="False"/>
+                    </t>
+                    <t t-else="">
+                        <t t-set="curr_line" t-value="line_item['line']"/>
+                        <t t-set="curr_dept" t-value="line_item['department']"/>
+                        <t t-set="curr_lot" t-value="line_item['lot']"/>
+                    </t>
+
+                    <div class="page flash-report-page" style="page-break-after: always;">
+                        <div class="oe_structure"/>
+                        <t t-call="project_reporting.report_flash_report_styles"/>
+
+                        <!-- Header with title and weather -->
+                        <div class="flash-report-header">
+                            <div class="flash-report-header-table">
+                                <div class="flash-report-header-row">
+                                    <div class="flash-report-header-cell flash-report-header-cell-title">
+                                        <h1 class="flash-report-title">
+                                            Flash Report /
+                                            <span style="font-weight: normal;">
+                                                <t t-esc="o.project_id.get_client_company_name()"/>
+                                                -
+                                                <t t-if="o.project_id.project_type == 'implementation'">
+                                                    <t t-if="o.project_id.implementation_category == 'integration'">
+                                                        Intégration Odoo
+                                                    </t>
+                                                    <t t-elif="o.project_id.implementation_category == 'evolution'">
+                                                        Evolution de version Odoo
+                                                    </t>
+                                                </t>
+                                            </span>
+                                        </h1>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Weather section with absolute positioning -->
+                            <div class="flash-report-weather-container">
+                                <div class="flash-report-weather-section">
+                                    <t t-if="curr_line.project_status == 'sunny'">
+                                        <img src="/project_reporting/static/description/weather_sun.png"
+                                             class="flash-report-weather-icon"/>
+                                    </t>
+                                    <t t-elif="curr_line.project_status == 'cloudy'">
+                                        <img src="/project_reporting/static/description/weather_cloudy.png"
+                                             class="flash-report-weather-icon"/>
+                                    </t>
+                                    <t t-elif="curr_line.project_status == 'rainy'">
+                                        <img src="/project_reporting/static/description/weather_rain.png"
+                                             class="flash-report-weather-icon"/>
+                                    </t>
+                                    <h4 class="flash-report-weather-title">
+                                        Météo projet
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flash-report-content">
+                            <!-- Project info -->
+                            <div class="flash-report-project-info-section">
+                                <!-- Project info -->
+                                <div class="flash-report-project-info" style="margin-top: 1rem;">
+                                    <span class="flash-report-lot-title">
+                                        <t t-if="o.department_type == 'custom' and curr_lot">
+                                            <t t-if="curr_lot.name">
+                                                <t t-esc="curr_lot.name.upper()"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-field="curr_lot.name"
+                                                      t-options="{'widget': 'char', 'uppercase': TRUE}"/>
+                                            </t>
+                                            : Département
+                                            <t t-if="curr_dept.short_name">
+                                                <span t-field="curr_dept.short_name"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span t-field="curr_dept.name"/>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            Tout département confondu
+                                        </t>
+                                    </span>
+                                </div>
+
+                                <!-- Week section -->
+                                <div style="margin-top: -1rem;">
+                                    <t t-call="project_reporting.report_flash_report_week_header_small"/>
+                                </div>
+                            </div>
+
+                            <!-- Content Boxes -->
+                            <table class="flash-report-table">
+                                <colgroup>
+                                    <col class="flash-report-table-col-left"/>
+                                    <col class="flash-report-table-col-middle"/>
+                                    <col class="flash-report-table-col-right"/>
+                                </colgroup>
+                                <tr style="height: 50%;" class="row-top">
+                                    <td class="flash-report-table-cell">
+                                        <!-- Tasks Completed Box -->
+                                        <div class="flash-report-box">
+                                            <div class="flash-report-box-header flash-report-box-header-success">
+                                                <h4>LES TÂCHES RÉALISÉES</h4>
+                                            </div>
+                                            <div class="flash-report-box-content">
+                                                <div t-field="curr_line.tasks_completed"
+                                                     t-options="{'widget': 'html'}"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td rowspan="2" class="flash-report-table-cell">
+                                        <!-- Upcoming Deliveries Box -->
+                                        <div class="flash-report-box">
+                                            <div class="flash-report-box-header">
+                                                <h4>LES LIVRAISONS À VENIR</h4>
+                                            </div>
+                                            <div class="flash-report-box-content">
+                                                <div t-field="curr_line.upcoming_deliveries"
+                                                     t-options="{'widget': 'html'}"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td rowspan="2" class="flash-report-table-cell">
+                                        <!-- Attention Points Box -->
+                                        <div class="flash-report-box">
+                                            <div class="flash-report-box-header flash-report-box-header-warning">
+                                                <h4>POINTS D'ATTENTION</h4>
+                                            </div>
+                                            <div class="flash-report-box-content">
+                                                <div t-field="curr_line.attention_points"
+                                                     t-options="{'widget': 'html'}"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="height: 50%;" class="row-bottom">
+                                    <td class="flash-report-table-cell">
+                                        <!-- Tasks In Progress Box -->
+                                        <div class="flash-report-box">
+                                            <div class="flash-report-box-header">
+                                                <h4>LES TÂCHES EN COURS</h4>
+                                            </div>
+                                            <div class="flash-report-box-content">
+                                                <div t-field="curr_line.tasks_in_progress"
+                                                     t-options="{'widget': 'html'}"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <t t-call="project_reporting.report_flash_report_footer"/>
+                        <div class="oe_structure"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

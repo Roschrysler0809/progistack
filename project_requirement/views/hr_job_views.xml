@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View -->
+    <record id="view_hr_job_form_inherit" model="ir.ui.view">
+        <field name="name">hr.job.form.inherit</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_form"/>
+        <field name="arch" type="xml">
+            <!-- Add the project profile role fields below the name field -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="currency_id" invisible="1"/>
+                <div class="o_row">
+                    <label for="default_daily_rate" string="Taux journalier par défaut"/>
+                    <field name="default_daily_rate" nolabel="1" widget="monetary"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List View -->
+    <record id="view_hr_job_list_inherit" model="ir.ui.view">
+        <field name="name">hr.job.list.inherit</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_hr_job_tree"/>
+        <field name="arch" type="xml">
+            <!-- Add default daily rate to the list view -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="default_daily_rate" string="Taux journalier par défaut" widget="monetary" width="200"/>
+                <field name="currency_id" invisible="1" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_hr_job_search_inherit" model="ir.ui.view">
+        <field name="name">hr.job.search.inherit</field>
+        <field name="model">hr.job</field>
+        <field name="inherit_id" ref="hr.view_job_filter"/>
+        <field name="arch" type="xml">
+            <!-- Add search by default daily rate -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="default_daily_rate"/>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

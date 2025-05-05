@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add meeting count button to project form -->
+    <record id="project_project_view_form_inherited" model="ir.ui.view">
+        <field name="name">project.project.form.inherited</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <!-- Add smart button for meetings in the header -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button class="oe_stat_button" type="object" name="action_view_meetings"
+                        icon="fa-calendar">
+                    <field string="Réunions" name="meeting_count" widget="statinfo"/>
+                </button>
+            </xpath>
+
+            <!-- Add meeting report print button in the settings menu -->
+            <xpath expr="//header" position="inside">
+                <button name="action_print_meeting_report"
+                        string="Imprimer Rapport Réunions"
+                        type="object"
+                        groups="project.group_project_manager"
+                        invisible="meeting_count == 0"
+                        class="btn-secondary"
+                        icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add meeting count to kanban view -->
+    <record id="project_project_view_kanban_inherited" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherited</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_project_kanban_boxes')]" position="inside">
+                <a class="o_project_kanban_box" name="action_view_meetings" type="object">
+                    <div>
+                        <span class="o_value">
+                            <field name="meeting_count"/>
+                        </span>
+                        <span class="o_label"> Réunions</span>
+                    </div>
+                </a>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add meetings button to list view (optional column) -->
+    <record id="project_project_view_tree_inherited" model="ir.ui.view">
+        <field name="name">project.project.list.inherited</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Add Réunions button -->
+            <xpath expr="//button[@name='action_view_tasks']" position="after">
+                <button name="action_view_meetings" type="object"
+                        string="Réunions" icon="fa-calendar"
+                        class="btn btn-secondary"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Server action to trigger the meeting report generation -->
+    <record id="action_server_meeting_report_excel" model="ir.actions.server">
+        <field name="name">Imprimer Rapport des Réunions</field>
+        <field name="model_id" ref="project.model_project_project"/>
+        <field name="binding_model_id" ref="project.model_project_project"/>
+        <field name="binding_view_types">form</field> <!-- Show in form view Print menu -->
+        <field name="state">code</field>
+        <field name="code">
+            # action is a keyword variable in server actions
+action = model.browse(env.context.get('active_ids')).action_print_meeting_report()
+        </field>
+    </record>
+</odoo> 

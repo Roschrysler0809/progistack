@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record id="view_project_flash_report_line_list" model="ir.ui.view">
+        <field name="name">project.flash.report.line.list</field>
+        <field name="model">project.flash.report.line</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <!-- Edit Button -->
+                <button name="open_form" string="Éditer" type="object"
+                        class="btn btn-primary" icon="fa-edit"/>
+                <!-- Report Information -->
+                <field name="report_date" readonly="1"/>
+                <field name="project_update_id" readonly="1"/>
+                <field name="project_id" readonly="1" optional="hide"/>
+                <field name="department" placeholder="Département"/>
+                <field name="project_status" string="Statut"/>
+                <!-- Task Information -->
+                <field name="tasks_completed" readonly="1" widget="html"/>
+                <field name="tasks_in_progress" readonly="1" widget="html"/>
+                <field name="upcoming_deliveries" readonly="1" widget="html"/>
+                <field name="attention_points" readonly="1" widget="html"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_project_flash_report_line_form" model="ir.ui.view">
+        <field name="name">project.flash.report.line.form</field>
+        <field name="model">project.flash.report.line</field>
+        <field name="arch" type="xml">
+            <form edit="1" create="0">
+                <sheet>
+                    <!-- Department -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="department" placeholder="Département" readonly="1"/>
+                        </h1>
+                    </div>
+                    <!-- Report Information -->
+                    <group>
+                        <field name="project_status" widget="radio"/>
+                    </group>
+                    <!-- Task Details Notebook -->
+                    <notebook>
+                        <page string="Tâches réalisées">
+                            <field name="tasks_completed"
+                                   placeholder="Décrivez les tâches qui ont été réalisées durant cette période..."/>
+                        </page>
+                        <page string="Tâches en cours">
+                            <field name="tasks_in_progress"
+                                   placeholder="Listez les tâches en cours de réalisation et leur état d'avancement..."/>
+                        </page>
+                        <page string="Livraisons à venir">
+                            <field name="upcoming_deliveries"
+                                   placeholder="Indiquez les prochaines étapes et livraisons prévues..."/>
+                        </page>
+                        <page string="Points d'attention">
+                            <field name="attention_points"
+                                   placeholder="Mentionnez les points nécessitant une attention particulière ou les risques identifiés..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_project_flash_report_line_search" model="ir.ui.view">
+        <field name="name">project.flash.report.line.search</field>
+        <field name="model">project.flash.report.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="department"/>
+                <field name="project_id"/>
+                <field name="project_status"/>
+                <group expand="0" string="Grouper Par">
+                    <filter string="Projet" name="group_by_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Département" name="group_by_department" context="{'group_by': 'department'}"/>
+                    <filter string="Statut" name="group_by_status" context="{'group_by': 'project_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_project_flash_report_line" model="ir.actions.act_window">
+        <field name="name">Lignes de Flash Report</field>
+        <field name="res_model">project.flash.report.line</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_project_flash_report_line_search"/>
+    </record>
+</odoo> 

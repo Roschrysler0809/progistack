@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Profils menu group in Settings Menu -->
+    <menuitem name="Profils"
+              id="menu_project_profile_group"
+              parent="project.menu_project_config"
+              sequence="80"/>
+
+    <menuitem name="Rôles"
+              id="menu_project_roles"
+              parent="menu_project_profile_group"
+              action="hr.action_hr_job"
+              sequence="10"/>
+
+    <!-- Requirements menu group in Settings Menu -->
+    <menuitem name="Exigences et Départements"
+              id="menu_project_requirement_group"
+              parent="project.menu_project_config"
+              sequence="90"/>
+
+    <menuitem name="Exigences"
+              id="menu_project_requirement"
+              parent="menu_project_requirement_group"
+              action="project_requirement.action_project_requirement"
+              sequence="10"/>
+
+    <menuitem name="Sous-exigences"
+              id="menu_project_subrequirement"
+              parent="menu_project_requirement_group"
+              action="project_requirement.action_project_subrequirement"
+              sequence="20"/>
+
+    <menuitem name="Départements"
+              id="menu_project_department"
+              parent="menu_project_requirement_group"
+              action="project_requirement.action_project_department"
+              sequence="30"/>
+
+    <!-- Menu for custom views -->
+    <menuitem id="menu_project_custom_views"
+              name="Vues"
+              parent="project.menu_main_pm"
+              sequence="25"/>
+
+    <menuitem id="menu_project_task_subtask_gantt"
+              name="Planning des sous-tâches par ressource"
+              parent="menu_project_custom_views"
+              action="project_requirement.action_project_task_subtask_gantt"
+              sequence="10"/>
+</odoo> 

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- List view -->
+        <record id="view_project_subrequirement_list" model="ir.ui.view">
+            <field name="name">project.subrequirement.list</field>
+            <field name="model">project.subrequirement</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence" widget="handle"/>
+                    <field name="description"/>
+                    <field name="department_id"/>
+                    <field name="requirement_id" optional="hide"/>
+                    <field name="subrequirement_type"/>
+                    <field name="project_type"/>
+                    <field name="estimated_work_days" width="200" sum="Total"/>
+                    <field name="complexity" widget="priority" width="60"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form view -->
+        <record id="view_project_subrequirement_form" model="ir.ui.view">
+            <field name="name">project.subrequirement.form</field>
+            <field name="model">project.subrequirement</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <!-- Description -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="description" placeholder="Nom de la sous-exigence"/>
+                            </h1>
+                        </div>
+
+                        <!-- Fields -->
+                        <group>
+                            <group>
+                                <!-- Not editable in case we're showing the form through "Exigence"
+                                     Editable only whenever we're creating a new "Sous-exigence" -->
+                                <field name="department_id" readonly="1"/>
+                                <field name="requirement_id"
+                                       readonly="context.get('from_requirement') or id"/>
+                                <field name="estimated_work_days"/>
+                                <field name="complexity" widget="priority"/>
+                                <field name="subrequirement_type"/>
+                                <field name="project_type"
+                                       readonly="context.get('from_requirement') or context.get('from_project') or id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- View Actions -->
+        <record id="action_project_subrequirement" model="ir.actions.act_window">
+            <field name="name">Sous-exigences</field>
+            <field name="res_model">project.subrequirement</field>
+            <field name="view_mode">list,form</field>
+        </record>
+    </data>
+</odoo> 

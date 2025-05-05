@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paper Format -->
+    <record id="paperformat_project_flash_report" model="report.paperformat">
+        <field name="name">Flash Report Format</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Report Action -->
+    <record id="action_report_project_update_flash_report" model="ir.actions.report">
+        <field name="name">Imprimer Flash Report</field>
+        <field name="model">project.update</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">project_reporting.report_project_flash_report</field>
+        <field name="report_file">project_reporting.report_project_flash_report</field>
+        <field name="binding_model_id" ref="model_project_update"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_project_flash_report"/>
+        <field name="print_report_name">'Flash Report - %s - %s' % (object.project_id.name, object.name)
+        </field>
+        <field name="binding_view_types">form,list</field>
+    </record>
+</odoo> 
