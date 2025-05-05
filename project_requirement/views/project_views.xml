@@ -141,11 +141,12 @@
                                    invisible="project_type != 'etude_chiffrage'"
                                    required="project_type == 'etude_chiffrage'"
                                    readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
-                            <field name="department_type"
+                            <field name="department_type" force_save="1"
                                    invisible="project_type != 'implementation'"
                                    required="project_type == 'implementation'"
                                    readonly="is_department_type_readonly"/>
                             <field name="department_ids" widget="many2many_tags"
+                                   force_save="1"
                                    options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
                                    domain="[('id', 'in', available_department_ids)]"
                                    readonly="stage == 'project' or (is_evolution_project)"
@@ -537,12 +538,12 @@
                                            placeholder="Sélectionner les départements du lot"
                                            domain="[('id', 'in', available_department_ids)]"
                                            options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
-                                    <field name="delivery_planned_date" width="140" readonly="1"/>
-                                    <field name="mep_planned_date" width="140" readonly="1"/>
+                                    <field name="delivery_planned_date" width="140" required="1"/>
+                                    <field name="mep_planned_date" width="140" required="1"/>
                                     <!-- Edit Button -->
-                                    <button name="action_open_lot_line_form" type="object" class="btn btn-primary"
+                                    <!-- <button name="action_open_lot_line_form" type="object" class="btn btn-primary"
                                             icon="fa-pencil-square-o" width="80" string="Editer"
-                                            column_invisible="parent.stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id)"/>
+                                            column_invisible="parent.stage == 'project' and (parent.project_type != 'etude_chiffrage' or parent.implementation_project_id)"/> -->
                                 </list>
                             </field>
                         </div>

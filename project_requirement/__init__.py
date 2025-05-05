@@ -9,5 +9,6 @@ def post_init_hook(env):
     """
     from .models.common_projects import get_generic_department
 
+    # env = api.Environment(cr, SUPERUSER_ID, {})
     # Ensure generic department exists
     get_generic_department(env)
