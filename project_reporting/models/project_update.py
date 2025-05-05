@@ -2,6 +2,7 @@ import base64
 import io
 
 import xlsxwriter
+from PIL import Image
 
 from odoo import models, fields, api, _
 from .common import PROJECT_STATUS_SELECTION, STANDARD_DEPARTMENT_NAME
@@ -536,7 +537,7 @@ class ProjectUpdate(models.Model):
                 worksheet.set_column('F:F', 18)  # % Integration
                 worksheet.set_column('G:G', 18)  # Date Livraison Prévue
                 worksheet.set_column('H:H', 18)  # Date Livraison Réelle
-                worksheet.set_column('I:I', 60)  # Commentaire
+                worksheet.set_column('I:I', 60)  # Commentaires
 
                 # Set row heights
                 worksheet.set_row(0, 16)  # Title row
@@ -568,22 +569,42 @@ class ProjectUpdate(models.Model):
 
                 # Get the current company logo
                 company_logo = self.env.company.logo
-
+                
+                def get_image_data_and_scale(image_b64, cell_width, cell_height):
+                    """
+                    Decode a base64 image, return a BytesIO buffer and the scale to fit in the cell.
+                    Args:
+                        image_b64 (str): Base64-encoded image.
+                        cell_width (int): Target cell width in px.
+                        cell_height (int): Target cell height in px.
+                    Returns:
+                        (BytesIO, float): image_data buffer, scale factor
+                    """
+                    image_data = io.BytesIO(base64.b64decode(image_b64))
+                    image_data.seek(0)
+                    with Image.open(image_data) as img:
+                        img_width, img_height = img.size
+                    x_scale = min(1.0, cell_width / img_width)
+                    y_scale = min(1.0, cell_height / img_height)
+                    scale = min(x_scale, y_scale)
+                    image_data.seek(0)
+                    return image_data, scale
+                
                 # Insert client logo in left cell if available
                 if client_logo:
-                    image_data = io.BytesIO(base64.b64decode(client_logo))
+                    image_data, scale = get_image_data_and_scale(client_logo, 400, 50)
                     worksheet.insert_image('A1', 'client_logo.png',
                                            {'image_data': image_data,
-                                            'x_scale': 0.5, 'y_scale': 0.5,
+                                            'x_scale': scale, 'y_scale': scale,
                                             'x_offset': 2, 'y_offset': 2,
-                                            'object_position': 1})  # Center the image in the cell
+                                            'object_position': 1})  # Centrer l'image dans la cellule
 
                 # Insert company logo in right cell
                 if company_logo:
-                    image_data = io.BytesIO(base64.b64decode(company_logo))
+                    image_data, scale = get_image_data_and_scale(company_logo, 400, 50)
                     worksheet.insert_image('I1', 'company_logo.png',
                                            {'image_data': image_data,
-                                            'x_scale': 0.5, 'y_scale': 0.5,
+                                            'x_scale': scale, 'y_scale': scale,
                                             'x_offset': 2, 'y_offset': 2,
                                             'object_position': 1})  # Center the image in the cell
 
