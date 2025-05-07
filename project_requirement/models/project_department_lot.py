@@ -14,7 +14,7 @@ class ProjectDepartmentLot(models.Model):
 
     name = fields.Char(string='Lot', compute='_compute_name', store=True)
     lot_number = fields.Integer(string='Numéro de lot', required=True, readonly=True)
-    project_id = fields.Many2one('project.project', string='Projet', required=True)
+    project_id = fields.Many2one('project.project', string='Projet', required=True, ondelete='cascade')
     department_ids = fields.Many2many('project.department', string='Départements')
     department_count = fields.Integer(compute='_compute_department_count', string='Nombre de départements')
     department_names = fields.Char(compute='_compute_department_names', string='Départements')

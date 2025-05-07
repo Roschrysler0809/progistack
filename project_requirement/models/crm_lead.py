@@ -73,7 +73,6 @@ class CrmLead(models.Model):
 
         # Set etude_chiffrage_category only if next_step is etude_chiffrage
         etude_chiffrage_category = self.etude_chiffrage_category if self.next_step == 'etude_chiffrage' else False
-
         # Open the project form view with default values
         return {
             'name': 'Nouveau Projet',

@@ -61,8 +61,8 @@ class Project(models.Model):
                                     required=True, tracking=True)
     department_type = fields.Selection(DEPARTMENT_TYPE_SELECTION, string="Suivi département",
                                        tracking=True)
-    implementation_category = fields.Selection(IMPLEMENTATION_CATEGORY_SELECTION, string="Catégorie", tracking=True)
-    etude_chiffrage_category = fields.Selection(ETUDE_CHIFFRAGE_CATEGORY_SELECTION, string="Catégorie", tracking=True)
+    implementation_category = fields.Selection(IMPLEMENTATION_CATEGORY_SELECTION, string="Catégorie implementation", default=False, tracking=True)
+    etude_chiffrage_category = fields.Selection(ETUDE_CHIFFRAGE_CATEGORY_SELECTION, string="Catégorie étude/chiffrage", tracking=True)
     department_ids = fields.Many2many('project.department', string="Département(s)",
                                       required=True)
     stage = fields.Selection(STAGE_SELECTION, string="Etape", default='preparation',
@@ -247,11 +247,10 @@ class Project(models.Model):
     @api.model
     def default_get(self, fields_list):
         """Override default_get to set default values"""
-        defaults = super().default_get(fields_list)
+        defaults = super(Project, self).default_get(fields_list)
         # Set allow_billable to True by default
         if 'allow_billable' in fields_list:
             defaults['allow_billable'] = True
-
         # Handle naming conventions for projects
         if defaults.get('name') and not self.env.context.get('crm_lead_id'):
             # Apply the naming convention using the helper method
@@ -977,8 +976,6 @@ class Project(models.Model):
                         for lot in self.lot_ids:
                             lot.department_ids = [(5, 0, 0)]  # Clear all departments
 
-            # Set default implementation category to empty
-            self.implementation_category = False
         elif self.project_type == 'etude_chiffrage':
             # Clear other project types fields
             self.department_type = False
@@ -2454,7 +2451,6 @@ class Project(models.Model):
 
         # Execute standard create method
         projects = super().create(vals_list)
-
         # Handle CRM lead linking if project was created from CRM
         for project in projects:
             # Apply default task types if not already set
