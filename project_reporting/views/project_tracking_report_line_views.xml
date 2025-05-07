@@ -5,10 +5,10 @@
         <field name="name">project.tracking.report.line.list</field>
         <field name="model">project.tracking.report.line</field>
         <field name="arch" type="xml">
-            <list create="0" editable="bottom">
+            <list create="0" editable="bottom" delete="0">
                 <!-- Edit Button -->
-                <button name="open_form" string="Editer" type="object"
-                        class="btn btn-primary" icon="fa-pencil-square-o"/>
+                <!--<button name="open_form" string="Editer" type="object"
+                        class="btn btn-primary" icon="fa-pencil-square-o"/> -->
                 <!-- Project Information -->
                 <field name="project_id" optional="hide"/>
                 <field name="requirement" readonly="1"/>
@@ -31,7 +31,7 @@
         <field name="name">project.tracking.report.line.form</field>
         <field name="model">project.tracking.report.line</field>
         <field name="arch" type="xml">
-            <form edit="1" create="0">
+            <form edit="1" create="0" delete="0">
                 <sheet>
                     <!-- Department -->
                     <div class="oe_title">
