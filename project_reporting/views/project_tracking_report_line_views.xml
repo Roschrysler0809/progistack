@@ -16,7 +16,7 @@
                 <field name="department" readonly="1"/>
                 <field name="lot_number" readonly="1"/>
                 <!-- Report Information -->
-                <field name="design_implementation_percentage" widget="progressbar" oreadonly="1"/>
+                <field name="design_implementation_percentage" widget="progressbar" readonly="1"/>
                 <field name="validation_percentage" widget="progressbar" readonly="1"/>
                 <field name="integration_percentage" widget="progressbar" readonly="1"/>
                 <field name="mep_planned_date" readonly="1"/>
