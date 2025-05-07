@@ -1,5 +1,6 @@
 from odoo import api
 from odoo import models, fields, _
+from odoo.api import ondelete
 from odoo.exceptions import UserError, ValidationError
 
 
@@ -27,9 +28,11 @@ class ProjectTrackingReportLine(models.Model):
     is_report_sent = fields.Boolean(string="Rapport envoyé", compute="_compute_is_report_sent", store=True)
 
     # Additional fields for referencing the actual requirement/subrequirement
-    requirement_line_id = fields.Many2one('project.requirement.line', string='Ligne d\'exigence', readonly=True)
+    requirement_line_id = fields.Many2one('project.requirement.line', string='Ligne d\'exigence', readonly=True,
+    ondelete='cascade'  # Cette option supprimera la ligne de suivi quand l'exigence est supprimée
+)
     subrequirement_line_id = fields.Many2one('project.subrequirement.line', string='Ligne de sous-exigence',
-                                             readonly=True)
+                                             readonly=True,ondelete="cascade")
 
     # Get the report date from the parent update
     report_date = fields.Datetime(related='project_update_id.report_date',

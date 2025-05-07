@@ -17,7 +17,7 @@ class ProjectRequirementLine(models.Model):
 
     # Fields specific to standard requirement lines
     description = fields.Text(string="Description", help="Description personnalisée de l'exigence")
-    requirement_id = fields.Many2one('project.requirement', string="Exigence", required=True)
+    requirement_id = fields.Many2one('project.requirement', string="Exigence", required=True, ondelete='cascade')
     project_department_ids = fields.Many2many(related='project_id.department_ids', string='Project Departments',
                                               readonly=True)
     implementation_project_id = fields.Many2one(related='project_id.implementation_project_id',
