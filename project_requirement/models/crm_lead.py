@@ -58,7 +58,7 @@ class CrmLead(models.Model):
                 self.department_type = False
 
     def action_create_project(self):
-        """Create a project from the CRM lead"""
+        """Create a project from the CRM lead or update an existing one"""
         self.ensure_one()
 
         # Validate next_step is selected
@@ -67,32 +67,56 @@ class CrmLead(models.Model):
 
         project_type = convert_next_step_to_project_type(self.next_step)
 
-        # Set department_type and implementation_category only if next_step is implementation
-        department_type = self.department_type if self.next_step == 'implementation' else False
-        implementation_category = self.implementation_category if self.next_step == 'implementation' else False
+        # Vérifier si un projet existe déjà lié à cette opportunité
+        existing_project = self.project_id
 
-        # Set etude_chiffrage_category only if next_step is etude_chiffrage
-        etude_chiffrage_category = self.etude_chiffrage_category if self.next_step == 'etude_chiffrage' else False
+        if existing_project:
+            # Si le projet existe déjà, ouvrez-le simplement sans mise à jour
+            # pour éviter les problèmes avec les départements obligatoires
+            project_id = existing_project.id
+        else:
+            # Créer un nouveau projet
+            vals = {
+                'name': self.name,
+                'partner_id': self.partner_id.id,
+                'project_type': project_type,
+                'stage': 'preparation',
+                'from_crm': True,
+            }
 
-        # Open the project form view with default values
+            # Set department_type and implementation_category only if next_step is implementation
+            if self.next_step == 'implementation':
+                vals.update({
+                    'department_type': self.department_type,
+                    'implementation_category': self.implementation_category,
+                })
+
+                # Si c'est un projet d'évolution, nous devons ajouter un département générique
+                if self.implementation_category == 'evolution':
+                    # Utiliser la fonction get_generic_department du module common_projects
+                    generic_dept = get_generic_department(self.env)
+                    vals['department_ids'] = [(4, generic_dept.id)]
+
+            # Set etude_chiffrage_category only if next_step is etude_chiffrage
+            if self.next_step == 'etude_chiffrage':
+                vals['etude_chiffrage_category'] = self.etude_chiffrage_category
+
+            # Create the project
+            project = self.env['project.project'].create(vals)
+
+            # Link the project to the lead
+            self.project_id = project.id
+            project_id = project.id
+
+        # Open the project
         return {
-            'name': 'Nouveau Projet',
+            'name': 'Projet',
             'type': 'ir.actions.act_window',
             'res_model': 'project.project',
             'view_mode': 'form',
+            'res_id': project_id,
+            'context': {'form_view_initial_mode': 'edit'},
             'target': 'current',
-            'context': {
-                'default_name': self.name,
-                'default_partner_id': self.partner_id.id,
-                'default_project_type': project_type,
-                'default_department_type': department_type,
-                'default_implementation_category': implementation_category,
-                'default_etude_chiffrage_category': etude_chiffrage_category,
-                'default_stage': 'preparation',
-                'default_from_crm': True,
-                'form_view_initial_mode': 'edit',
-                'crm_lead_id': self.id,
-            },
         }
 
     def action_view_project(self):
