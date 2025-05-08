@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <list create="0" editable="bottom" delete="0">
                 <!-- Edit Button -->
-                <!--<button name="open_form" string="Editer" type="object"
+                <!-- <button name="open_form" string="Editer" type="object"
                         class="btn btn-primary" icon="fa-pencil-square-o"/> -->
                 <!-- Project Information -->
                 <field name="project_id" optional="hide"/>
@@ -21,7 +21,7 @@
                 <field name="integration_percentage" widget="progressbar" readonly="1"/>
                 <field name="mep_planned_date" readonly="1"/>
                 <field name="mep_actual_date" readonly="1"/>
-                <field name="comments"/>
+                <field name="comments" readonly="1"/>
             </list>
         </field>
     </record>

@@ -12,7 +12,7 @@ class ProjectRequirementLine(models.Model):
     _name = 'project.requirement.line'
     _inherit = 'project.abstract.requirement.line'
     _description = "Ligne d'exigence du projet"
-    _order = 'order, planned_end_date, requirement_id, id'
+    _order = 'requirement_id'
     _rec_name = 'display_name'
 
     # Fields specific to standard requirement lines

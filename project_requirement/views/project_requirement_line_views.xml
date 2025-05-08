@@ -5,7 +5,7 @@
         <field name="name">project.requirement.line.list</field>
         <field name="model">project.requirement.line</field>
         <field name="arch" type="xml">
-            <list default_order="order asc, planned_end_date asc" editable="bottom" create="0">
+            <list editable="bottom" create="0">
                 <!-- Requirement field with our custom widget -->
                 <field name="requirement_id" string="Exigence" widget="requirement_line_text"
                        options="{'no_create': True}"/>
@@ -40,7 +40,7 @@
         <field name="name">project.requirement.line.department.embedded</field>
         <field name="model">project.requirement.line</field>
         <field name="arch" type="xml">
-            <list default_order="order asc, planned_end_date asc" editable="bottom" create="0">
+            <list editable="bottom" create="0">
                 <field name="project_stage" column_invisible="1"/>
                 <!-- Edit button -->
                 <button name="action_open_form" string="Editer" type="object"
