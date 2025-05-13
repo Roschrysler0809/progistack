@@ -516,9 +516,9 @@
         <t t-if="o and o.project_id and o.project_id.partner_id">
             <t t-set="client"
                t-value="o.project_id.partner_id.parent_id if o.project_id.partner_id.parent_id and not o.project_id.partner_id.is_company else o.project_id.partner_id"/>
-            <img t-if="client" t-att-src="'/web/image/res.partner/%s/image_1920/300x0' % client.id"
+            <!-- <img t-if="client" t-att-src="'/web/image/res.partner/%s/image_1920/300x0' % client.id"
                  t-att-alt="client.name"
-                 class="flash-report-client-logo"/>
+                 class="flash-report-client-logo"/> -->
         </t>
     </template>
 
