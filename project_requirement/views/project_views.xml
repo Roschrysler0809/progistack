@@ -693,7 +693,6 @@
                                            domain="[('requirement_id.department_id', 'in', department_ids)]"
                                            context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}"
                                            readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)">
-                                           
                                         <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
                                     </field>
                                 </page>

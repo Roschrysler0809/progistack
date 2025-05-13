@@ -568,6 +568,9 @@ class ProjectUpdate(models.Model):
                     # Otherwise use the partner's logo directly if it's a company
                     elif partner.is_company and partner.image_1920:
                         client_logo = partner.image_1920
+                    else:
+                        client_logo = partner.image_1920 if partner.image_1920 else None
+                    
 
                 # Get the current company logo
                 company_logo = self.env.company.logo
@@ -603,7 +606,7 @@ class ProjectUpdate(models.Model):
 
                 # Insert company logo in right cell
                 if company_logo:
-                    image_data, scale = get_image_data_and_scale(company_logo, 400, 50)
+                    image_data, scale = get_image_data_and_scale(company_logo, 500, 50)
                     worksheet.insert_image('I1', 'company_logo.png',
                                            {'image_data': image_data,
                                             'x_scale': scale, 'y_scale': scale,
