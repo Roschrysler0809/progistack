@@ -51,7 +51,7 @@
                             <field name="tasks_in_progress"
                                    placeholder="Listez les tâches en cours de réalisation et leur état d'avancement..."/>
                         </page>
-                        <page string="Livraisons à venir">
+                        <page string="Prochaines étapes">
                             <field name="upcoming_deliveries"
                                    placeholder="Indiquez les prochaines étapes et livraisons prévues..."/>
                         </page>

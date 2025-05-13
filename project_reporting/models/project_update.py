@@ -537,7 +537,9 @@ class ProjectUpdate(models.Model):
                 worksheet.set_column('F:F', 18)  # % Integration
                 worksheet.set_column('G:G', 18)  # Date Livraison Prévue
                 worksheet.set_column('H:H', 18)  # Date Livraison Réelle
-                worksheet.set_column('I:I', 60)  # Commentaires
+                worksheet.set_column('I:I', 18)  # Date MEP Prévue
+                worksheet.set_column('J:J', 18)  # Date MEP Réelle
+                worksheet.set_column('K:K', 60)  # Commentaires
 
                 # Set row heights
                 worksheet.set_row(0, 16)  # Title row
@@ -617,7 +619,7 @@ class ProjectUpdate(models.Model):
                 headers = [
                     'Département', 'Exigences', 'Sous-Exigences',
                     '% Conception & Dev.', '% Validation', '% Integration',
-                    'Date Livraison Prévue', 'Date Livraison Réelle', 'Commentaires'
+                    'Date Livraison Prévue', 'Date Livraison Réelle', 'Date MEP Prévue', 'Date MEP Réelle', 'Commentaires'
                 ]
                 for col, header in enumerate(headers):
                     # Use different formats for different columns
@@ -794,9 +796,11 @@ class ProjectUpdate(models.Model):
                         # Date cells
                         worksheet.write(row, 6, line.delivery_planned_date or "", date_cell_format)
                         worksheet.write(row, 7, line.delivery_actual_date or "", date_cell_format)
+                        worksheet.write(row, 8, line.mep_planned_date or "", date_cell_format)
+                        worksheet.write(row, 9, line.mep_actual_date or "", date_cell_format)
 
                         # Comments
-                        worksheet.write(row, 8, line.comments or "", comment_format)
+                        worksheet.write(row, 10, line.comments or "", comment_format)
 
                         row += 1
 
@@ -813,7 +817,7 @@ class ProjectUpdate(models.Model):
                 table_name = "Table" + ''.join(c for c in name_for_table if c.isalnum())
 
                 # Add table with named style
-                worksheet.add_table(f'C{start_row + 1}:I{start_row + total_dept_rows}', {
+                worksheet.add_table(f'C{start_row + 1}:K{start_row + total_dept_rows}', {
                     'header_row': False,
                     'name': table_name,  # Name the table after the department
                     'style': 'Table Style Light 9',  # Use a style with alternating row colors
@@ -824,6 +828,8 @@ class ProjectUpdate(models.Model):
                         {'header': '% Integration'},
                         {'header': 'Date Livraison Prévue'},
                         {'header': 'Date Livraison Réelle'},
+                        {'header': 'Date MEP Prévue'},
+                        {'header': 'Date MEP Réelle'},
                         {'header': 'Commentaires'}
                     ]
                 })

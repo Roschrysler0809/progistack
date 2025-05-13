@@ -229,8 +229,12 @@ class ProjectRequirementLine(models.Model):
         return result
 
     def write(self, vals):
-        """
-        Override write to trim trailing spaces in description field
-        """
+        print(f"[REQUIREMENT LINE WRITE] Appel write sur {self.ids} avec vals={vals}")
         self._trim_trailing_spaces(vals)
-        return super(ProjectRequirementLine, self).write(vals)
+        res = super(ProjectRequirementLine, self).write(vals)
+        print(f"[REQUIREMENT LINE WRITE] Après write, project_id={self.project_id.id if self.project_id else None}")
+        return res
+    
+    def unlink(self):
+        print(f"[REQUIREMENT LINE UNLINK] Suppression des lignes {self.ids} pour projet(s) {[r.project_id.id for r in self]}")
+        return super().unlink()

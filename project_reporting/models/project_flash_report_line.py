@@ -17,7 +17,7 @@ class ProjectFlashReportLine(models.Model):
                                       default='sunny')
     tasks_completed = fields.Html(string='Tâches réalisées')
     tasks_in_progress = fields.Html(string='Tâches en cours')
-    upcoming_deliveries = fields.Html(string='Livraisons à venir')
+    upcoming_deliveries = fields.Html(string='Prochaines étapes')
     attention_points = fields.Html(string='Points d\'attention')
     is_report_sent = fields.Boolean(string="Rapport envoyé", compute="_compute_is_report_sent", store=True)
 

@@ -538,8 +538,8 @@
                                            placeholder="Sélectionner les départements du lot"
                                            domain="[('id', 'in', available_department_ids)]"
                                            options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
-                                    <field name="delivery_planned_date" width="140" required="1"/>
-                                    <field name="mep_planned_date" width="140" required="1"/>
+                                    <field name="delivery_planned_date" width="140" required="parent.implementation_category == 'integration'"/>
+                                    <field name="mep_planned_date" width="140" required="parent.implementation_category == 'integration'"/>
                                     <!-- Edit Button -->
                                     <!-- <button name="action_open_lot_line_form" type="object" class="btn btn-primary"
                                             icon="fa-pencil-square-o" width="80" string="Editer"
@@ -693,6 +693,7 @@
                                            domain="[('requirement_id.department_id', 'in', department_ids)]"
                                            context="{'default_project_id': id, 'parent_stage': stage, 'parent_project_type': project_type, 'parent_implementation_project_id': implementation_project_id}"
                                            readonly="stage == 'project' and (project_type != 'etude_chiffrage' or implementation_project_id)">
+                                           
                                         <list view_ref="project_requirement.view_project_requirement_line_department_embedded"/>
                                     </field>
                                 </page>

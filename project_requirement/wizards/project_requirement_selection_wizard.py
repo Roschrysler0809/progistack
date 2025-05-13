@@ -56,16 +56,18 @@ class ProjectRequirementSelectionWizard(models.TransientModel):
             return {'type': 'ir.actions.act_window_close'}
 
         # Add each selected requirement to the project
+        print("[WIZARD] Avant création, requirement_line_ids:", self.project_id.requirement_line_ids.ids)
         for requirement in self.requirement_ids:
-            self.env['project.requirement.line'].create({
+            line = self.env['project.requirement.line'].create({
                 'project_id': self.project_id.id,
                 'requirement_id': requirement.id,
                 # Copy default values if needed, like estimated days
                 # 'estimated_work_days': requirement.estimated_work_days,
                 # 'estimated_days': requirement.estimated_days,
             })
-
+            print(f"[WIZARD] Créé requirement.line ID={line.id} pour requirement_id={requirement.id}")
+        print("[WIZARD] Après création, requirement_line_ids:", self.project_id.requirement_line_ids.ids)
         # Reorder the requirements if necessary (optional)
-        self.project_id._reorder_requirements_after_save()
+        # self.project_id._reorder_requirements_after_save()
 
         return {'type': 'ir.actions.act_window_close'}
