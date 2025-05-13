@@ -551,11 +551,11 @@ class ProjectUpdate(models.Model):
                 # Left logo area
                 worksheet.merge_range('A1:A3', '', logo_format)
 
-                # Title spans rows 1-3, from column B to column I
-                worksheet.merge_range('B1:H3', title, header_format)
+                # Title spans rows 1-3, from column B to column J
+                worksheet.merge_range('B1:J3', title, header_format)
 
                 # Right logo area
-                worksheet.merge_range('I1:I3', '', logo_format)
+                worksheet.merge_range('K1:K3', '', logo_format)
 
                 # Add logos to the worksheet
                 # Get the client's company logo (from project's partner)
@@ -577,13 +577,13 @@ class ProjectUpdate(models.Model):
                 
                 def get_image_data_and_scale(image_b64, cell_width, cell_height):
                     """
-                    Decode a base64 image, return a BytesIO buffer and the scale to fit in the cell.
+                    Decode a base64 image, return a BytesIO buffer, the scale to fit in the cell, and offsets to center the image.
                     Args:
                         image_b64 (str): Base64-encoded image.
                         cell_width (int): Target cell width in px.
                         cell_height (int): Target cell height in px.
                     Returns:
-                        (BytesIO, float): image_data buffer, scale factor
+                        (BytesIO, float, int, int): image_data buffer, scale factor, x_offset, y_offset
                     """
                     image_data = io.BytesIO(base64.b64decode(image_b64))
                     image_data.seek(0)
@@ -592,29 +592,37 @@ class ProjectUpdate(models.Model):
                     x_scale = min(1.0, cell_width / img_width)
                     y_scale = min(1.0, cell_height / img_height)
                     scale = min(x_scale, y_scale)
+                    img_width_scaled = img_width * scale
+                    img_height_scaled = img_height * scale
+                    x_offset = int((cell_width - img_width_scaled) / 2)
+                    y_offset = int((cell_height - img_height_scaled) / 2)
                     image_data.seek(0)
-                    return image_data, scale
+                    return image_data, scale, x_offset, y_offset
                 
                 # Insert client logo in left cell if available
                 if client_logo:
-                    image_data, scale = get_image_data_and_scale(client_logo, 400, 50)
+                    cell_width_px = 400  # largeur de la cellule fusionnée A1:A3
+                    cell_height_px = 48  # hauteur de la cellule fusionnée A1:A3 (3 x 16)
+                    image_data, scale, x_offset, y_offset = get_image_data_and_scale(client_logo, cell_width_px, cell_height_px)
                     worksheet.insert_image('A1', 'client_logo.png',
-                                           {'image_data': image_data,
-                                            'x_scale': scale, 'y_scale': scale,
-                                            'x_offset': 2, 'y_offset': 2,
-                                            'object_position': 1})  # Centrer l'image dans la cellule
+                                          {'image_data': image_data,
+                                           'x_scale': scale, 'y_scale': scale,
+                                           'x_offset': x_offset, 'y_offset': y_offset,
+                                           'object_position': 1})  # Centrage précis de l'image
 
                 # Insert company logo in right cell
                 if company_logo:
-                    image_data, scale = get_image_data_and_scale(company_logo, 500, 50)
-                    worksheet.insert_image('I1', 'company_logo.png',
-                                           {'image_data': image_data,
-                                            'x_scale': scale, 'y_scale': scale,
-                                            'x_offset': 2, 'y_offset': 2,
-                                            'object_position': 1})  # Center the image in the cell
+                    cell_width_px = 400  # largeur de la cellule fusionnée K1:K3
+                    cell_height_px = 48  # hauteur de la cellule fusionnée K1:K3 (3 x 16)
+                    image_data, scale, x_offset, y_offset = get_image_data_and_scale(company_logo, cell_width_px, cell_height_px)
+                    worksheet.insert_image('K1', 'company_logo.png',
+                                          {'image_data': image_data,
+                                           'x_scale': scale, 'y_scale': scale,
+                                           'x_offset': x_offset, 'y_offset': y_offset,
+                                           'object_position': 1})  # Centrage précis de l'image
 
                 # Empty separator line
-                worksheet.merge_range('A4:I4', '')
+                worksheet.merge_range('A4:K4', '')
 
                 # Table headers
                 row = 4  # 0-indexed, so row 5 in Excel

@@ -995,7 +995,7 @@
                                         <!-- Upcoming Deliveries Box -->
                                         <div class="flash-report-box">
                                             <div class="flash-report-box-header">
-                                                <h4>LES LIVRAISONS À VENIR</h4>
+                                                <h4>PROCHAINES ÉTAPES</h4>
                                             </div>
                                             <div class="flash-report-box-content">
                                                 <div t-field="curr_line.upcoming_deliveries"
