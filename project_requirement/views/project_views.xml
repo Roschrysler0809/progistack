@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Kanban View -->
+    <record id="view_project_kanban_inherit" model="ir.ui.view">
+        <field name="name">view.project.kanban.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="action"></attribute>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Form View -->
     <record id="view_project_form_inherit" model="ir.ui.view">
         <field name="name">project.project.form.inherit</field>
@@ -49,10 +61,13 @@
             <!-- Add buttons for sale orders in the button box -->
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
                 <button name="action_view_latest_devis" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                        groups="sales_team.group_sale_salesman_all_leads,project_requirement.group_project_requirement_user_all_project"
                         invisible="not current_sale_order_id">
-                    <field name="current_sale_order_id" widget="statinfo" string="Devis"/>
+                    <field name="current_sale_order_id" options="{'no_create': True,'no_open': True}" widget="statinfo"
+                           string="Devis"/>
                 </button>
                 <button name="action_view_all_devis" type="object" class="oe_stat_button" icon="fa-list"
+                        groups="sales_team.group_sale_salesman_all_leads,project_requirement.group_project_requirement_user_all_project"
                         invisible="not sale_order_ids">
                     <field name="sale_order_ids" widget="statinfo" string="Tous les devis"/>
                 </button>
@@ -131,17 +146,21 @@
                                    readonly="(stage == 'project') or (project_type == 'implementation' and from_etude_chiffrage)"
                                    required="1"/>
                             <field name="project_type" required="1"
+                                   options="{'horizontal': True}" widget="radio"
                                    readonly="from_crm and not from_etude_chiffrage or stage == 'project' or id"
                                    placeholder="Sélectionner le type de projet"/>
                             <field name="implementation_category"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'implementation'"
                                    required="project_type == 'implementation'"
                                    readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
                             <field name="etude_chiffrage_category"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'etude_chiffrage'"
                                    required="project_type == 'etude_chiffrage'"
                                    readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
                             <field name="department_type" force_save="1"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'implementation'"
                                    required="project_type == 'implementation'"
                                    readonly="is_department_type_readonly"/>
@@ -150,9 +169,10 @@
                                    options="{'color_field': 'color', 'no_create': True, 'no_create_edit': True}"
                                    domain="[('id', 'in', available_department_ids)]"
                                    readonly="stage == 'project' or (is_evolution_project)"
-                                   placeholder="Sélectionner le(s) département(s)"/>
-                            <field name="tag_ids" string="Étiquettes" widget="many2many_tags"
-                                   options="{'color_field': 'color'}"/>
+                                   required="project_type not in ['internal']"
+                                   invisible="project_type in ['internal','maintenance']"
+                                   placeholder="Sélectionner le(s) département(s)"
+                            />
                             <field name="sale_order_ids" string="Tous les devis" widget="many2many_tags" readonly="1"
                                    options="{'no_create': True, 'no_open': False}"
                                    invisible="not id or not sale_order_ids"/>
@@ -162,17 +182,19 @@
                         <group>
                             <field name="user_id" string="Chef de projet" widget="many2one_avatar_user"
                                    readonly="stage == 'project'" required="1"/>
-                            <field name="date_start" placeholder="Date de démarrage prévu" required="0" invisible="1"/>
-                            <field name="date" placeholder="Date de fin prévue" required="0" invisible="1"/>
+                            <field name="tag_ids" string="Étiquettes" widget="many2many_tags"
+                                   options="{'color_field': 'color'}"/>
+                            <field name="date_start" placeholder="Date de démarrage prévu" required="0" invisible="project_type not in ['internal']"/>
+                            <field name="date" placeholder="Date de fin prévue" required="0" invisible="project_type not in ['internal']"/>
                         </group>
                     </div>
                 </div>
 
                 <!-- Project stages information in cards -->
-                <div class="row mt-3 mb-2 justify-content-start" invisible="not id">
+                <div class="row mt-3 mb-2 justify-content-start" invisible="not id or project_type in ['internal','maintenance']">
                     <!-- Devis card -->
                     <div class="col-lg-4 col-md-6 col-sm-12 mb-3" invisible="not requires_devis_steps">
-                        <div class="card">
+                        <div class="card" invisible="current_sale_order_id">
                             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                 <strong class="card-header-title">Devis</strong>
 
@@ -182,11 +204,21 @@
                                        title="Flèche de progression" aria-label="Flèche de progression"/>
                                 </div>
                             </div>
+
                             <div class="card-body pb-2">
                                 <!-- Generate devis button -->
-                                <div class="text-center"
-                                     invisible="current_sale_order_id or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids) or (not profile_line_ids and profiles_required) or not department_ids or stage != 'preparation'">
+                                <div class="text-center">
+                                    <!-- Générer un devis à condition que le projet soit une etude et chiffrage facturé  -->
                                     <button name="action_generate_devis" type="object"
+                                            invisible="current_sale_order_id or not (project_type == 'etude_chiffrage' and etude_chiffrage_category == 'billable')"
+                                            groups="sales_team.group_sale_salesman_all_leads"
+                                            class="btn btn-primary mb-2 w-100"
+                                            string="Générer le devis"/>
+
+                                    <!-- Générer un devis à condition que le projet soit une implementation avec profils et exigences  -->
+                                    <button name="action_generate_devis" type="object"
+                                            invisible="current_sale_order_id or (project_type == 'etude_chiffrage' and etude_chiffrage_category == 'billable') or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids) or (not profile_line_ids and profiles_required)"
+                                            groups="sales_team.group_sale_salesman_all_leads"
                                             class="btn btn-primary mb-2 w-100"
                                             string="Générer le devis"/>
                                 </div>
@@ -211,7 +243,21 @@
                                     <i class="fa fa-info-circle me-1" title="Information"></i>
                                     <span>Ajoutez au moins un profil dans l'onglet "Profils"</span>
                                 </div>
+                            </div>
+                        </div>
 
+                        <div class="card" invisible="not current_sale_order_id">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <strong class="card-header-title">Devis</strong>
+
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-arrow-right flow-arrow"
+                                       invisible="stage in ['preparation'] or not (stage in ['devis_created', 'devis_validated', 'project'])"
+                                       title="Flèche de progression" aria-label="Flèche de progression"/>
+                                </div>
+                            </div>
+
+                            <div class="card-body pb-2">
                                 <!-- Devis information display -->
                                 <div class="mb-2"
                                      invisible="(stage == 'preparation' and not current_sale_order_id)">
@@ -220,7 +266,8 @@
                                             Généré par:
                                         </label>
                                         <div class="col-md-7">
-                                            <field name="devis_generated_by" nolabel="1"/>
+                                            <field name="devis_generated_by"
+                                                   options="{'no_create': True,'no_open': True}" nolabel="1"/>
                                         </div>
                                     </div>
                                     <div class="mb-2 row" name="row_devis_generated_date">
@@ -233,11 +280,12 @@
                                     </div>
                                     <div class="row" name="row_devis_references">
                                         <label for="current_sale_order_id"
+                                               options="{'no_open': True, 'no_create': True}"
                                                class="text-muted col-md-5 form-label-compact">Devis:
                                         </label>
                                         <div class="col-md-7">
                                             <field name="current_sale_order_id" readonly="1" nolabel="1"
-                                                   options="{'no_create': True}" widget="many2one_tag"/>
+                                                   options="{'no_create': True,'no_open': True}" widget="many2one_tag"/>
                                         </div>
                                     </div>
 
@@ -249,7 +297,8 @@
                                                    class="text-muted col-md-5 form-label-compact">Validé par:
                                             </label>
                                             <div class="col-md-7">
-                                                <field name="devis_validated_by" nolabel="1"/>
+                                                <field name="devis_validated_by"
+                                                       options="{'no_create': True,'no_open': True}" nolabel="1"/>
                                             </div>
                                         </div>
                                         <div class="row" name="row_devis_validated_date">
@@ -290,6 +339,7 @@
                                     <button name="action_cancel_devis" type="object"
                                             class="btn btn-link text-danger p-2"
                                             string="Annuler le devis"
+                                            groups="sales_team.group_sale_manager"
                                             confirm="Êtes-vous sûr de vouloir annuler ce devis? Cette action ne peut pas être annulée."/>
                                 </div>
                             </div>
@@ -376,6 +426,7 @@
                                     <i class="fa fa-info-circle me-1" title="Information"></i>
                                     <span>Vous devez créer au moins un lot dans l'onglet "Lots".</span>
                                 </div>
+
                                 <!-- Feedback message: Assign departments to lots -->
                                 <div class="alert alert-info text-center my-2" role="alert"
                                      invisible="not has_lots or all_departments_assigned or stage != 'preparation' or not profiles_workload_valid">
@@ -444,6 +495,7 @@
                                     <i class="fa fa-info-circle me-1" title="Information"></i>
                                     <span>Vous devez créer au moins un lot dans l'onglet "Lots".</span>
                                 </div>
+
                                 <!-- Feedback message: Assign departments to lots (devis projects) -->
                                 <div class="alert alert-info text-center my-2" role="alert"
                                      invisible="not has_lots or all_departments_assigned or not requires_devis_steps or stage != 'devis_validated' or not ((project_type == 'implementation' or project_type == 'etude_chiffrage') and date_start and date and not is_end_date_invalid) or (not profile_line_ids and profiles_required) or (custom_requirements_required and not custom_requirement_line_ids) or (regular_requirements_required and not requirement_line_ids)">
@@ -538,8 +590,8 @@
                                            placeholder="Sélectionner les départements du lot"
                                            domain="[('id', 'in', available_department_ids)]"
                                            options="{'no_create': True, 'no_create_edit': True, 'no_open': True, 'color_field': 'color'}"/>
-                                    <field name="delivery_planned_date" width="140" required="parent.implementation_category == 'integration'"/>
-                                    <field name="mep_planned_date" width="140" required="parent.implementation_category == 'integration'"/>
+                                    <field name="delivery_planned_date" width="140" required="1"/>
+                                    <field name="mep_planned_date" width="140" required="1"/>
                                     <!-- Edit Button -->
                                     <!-- <button name="action_open_lot_line_form" type="object" class="btn btn-primary"
                                             icon="fa-pencil-square-o" width="80" string="Editer"
@@ -618,6 +670,7 @@
                                     <field name="role_id" placeholder="Rôle" required="1"/>
                                     <field name="workload_days" width="150" sum="Total Charge"/>
                                     <field name="daily_rate" string="Taux journalier" widget="monetary"
+                                           groups="project_requirement.group_project_requirement_user_all_project"
                                            options="{'currency_field': 'currency_id'}" width="250"/>
                                     <field name="involvement" string="Implication" width="150"/>
                                     <field name="currency_id" optional="hide"/>
@@ -635,7 +688,9 @@
                                            context="{'default_project_id': id}">
                                         <list editable="bottom">
                                             <field name="role_id" placeholder="Rôle" required="1"/>
-                                            <field name="daily_rate" string="Taux journalier" widget="monetary"
+                                            <field name="daily_rate"
+                                                   groups="project_requirement.group_project_requirement_user_all_project"
+                                                   string="Taux journalier" widget="monetary"
                                                    options="{'currency_field': 'currency_id'}" width="250"/>
                                             <field name="involvement" string="Implication" width="150"/>
                                             <field name="workload_days" width="150" sum="Total Charge"/>
@@ -1070,17 +1125,21 @@
                                    readonly="(stage == 'project') or (project_type == 'implementation' and from_etude_chiffrage)"
                                    required="1"/>
                             <field name="project_type" required="1"
+                                   options="{'horizontal': True}" widget="radio"
                                    readonly="from_crm and not from_etude_chiffrage or stage == 'project' or id"
                                    placeholder="Sélectionner le type de projet"/>
                             <field name="implementation_category"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'implementation'"
                                    required="project_type == 'implementation'"
                                    readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
                             <field name="etude_chiffrage_category"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'etude_chiffrage'"
                                    required="project_type == 'etude_chiffrage'"
                                    readonly="stage == 'project' or (from_crm and not from_etude_chiffrage) or (stage not in ['preparation'])"/>
                             <field name="department_type"
+                                   options="{'horizontal': True}" widget="radio"
                                    invisible="project_type != 'implementation'"
                                    required="project_type == 'implementation'"
                                    readonly="is_department_type_readonly"/>
@@ -1223,4 +1282,4 @@
             </xpath>
         </field>
     </record>
-</odoo> 
+</odoo>

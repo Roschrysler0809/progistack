@@ -14,6 +14,7 @@
                 'hr_timesheet'],
     'data': [
         'security/ir.model.access.csv',
+        "security/security.xml",
         'data/project_data.xml',
         'views/project_department_views.xml',
         'views/project_requirement_views.xml',

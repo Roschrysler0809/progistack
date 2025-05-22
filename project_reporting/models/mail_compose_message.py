@@ -1,8 +1,10 @@
-from odoo import models
+from odoo import models,fields
 
 
 class MailComposeMessage(models.TransientModel):
     _inherit = 'mail.compose.message'
+
+    email_cc = fields.Char(string='CC')
 
     def _action_send_mail(self, auto_commit=False):
         """Override to update project update status after sending email."""
@@ -28,3 +30,11 @@ class MailComposeMessage(models.TransientModel):
                 pass
 
         return result
+
+    def get_mail_values(self, res_ids):
+        mail_values = super().get_mail_values(res_ids)
+        for res_id in res_ids:
+            if self.email_cc:
+                mail_values[res_id]['email_cc'] = self.email_cc
+        return mail_values
+

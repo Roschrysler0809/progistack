@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Form View for the wizard -->
+    <record id="view_project_requirement_selection_wizard_form" model="ir.ui.view">
+        <field name="name">project.requirement.selection.wizard.form</field>
+        <field name="model">project.requirement.selection.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sélectionner les exigences à ajouter">
+                <sheet>
+                    <field name="project_id" invisible="1"/>
+                    <field name="available_requirement_domain" invisible="1"/>
+
+                    <!-- Many2many field for selecting requirements -->
+                    <field name="requirement_ids"
+                           domain="available_requirement_domain"
+                           nolabel="1"
+                           widget="many2many"
+                           context="{'no_create': True, 'no_edit': True, 'no_open': True}">
+                        <!-- We define the embedded list view to make it readonly and not able to create requirements -->
+                        <!-- Context is kept for extra safety, especially for pop-ups -->
+                        <list no_create="1" create="0" edit="0" editable="bottom" readonly="1">
+                            <field name="name"/>
+                            <field name="department_id" widget="many2one_tag" width="200"/>
+                            <field name="type" width="150"/>
+                            <field name="estimated_work_days" sum="Total" width="180"/>
+                        </list>
+
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_confirm" string="Insérer les exigences sélectionnées"
+                            type="object" class="btn-primary" data-hotkey="q"
+                            invisible="not requirement_ids"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for opening the wizard -->
+    <record id="action_project_requirement_selection_wizard" model="ir.actions.act_window">
+        <field name="name">Sélectionner les exigences</field>
+        <field name="res_model">project.requirement.selection.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="project_requirement.model_project_project"/>
+        <field name="binding_view_types">form</field>
+    </record>
+</odoo> 

@@ -4,7 +4,9 @@
     <record id="mail_template_project_update" model="mail.template">
         <field name="name">Rapport de projet</field>
         <field name="model_id" ref="project.model_project_update"/>
-        <field name="subject">Rapport de suivi du {{ object.report_date.strftime('%d/%m/%Y') }}{{ ' au ' + object.report_date_end.strftime('%d/%m/%Y') if object.report_date_end else '' }}</field>
+        <field name="subject">Rapport de suivi du {{ object.report_date.strftime('%d/%m/%Y') }}{{ ' au ' +
+            object.report_date_end.strftime('%d/%m/%Y') if object.report_date_end else '' }}
+        </field>
         <field name="email_from">{{ user.email_formatted }}</field>
         <field name="partner_to">{{ ','.join(map(str, object.project_id.partner_id.ids)) }}</field>
         <field name="auto_delete" eval="True"/>
@@ -29,4 +31,16 @@
             </div>
         </field>
     </record>
+
+    <record id="view_email_compose_message_wizard_form_cc" model="ir.ui.view">
+        <field name="name">mail.email.compose.message.wizard.form.cc</field>
+        <field name="model">mail.compose.message</field>
+        <field name="inherit_id" ref="mail.email_compose_message_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='subject']" position="after">
+                <field name="email_cc"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo> 

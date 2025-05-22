@@ -21,9 +21,9 @@
                 <field name="integration_percentage" widget="progressbar" options="{'editable': true}"/>
                 <field name="delivery_planned_date" readonly="1" width="120" optional="show"/>
                 <field name="delivery_actual_date" width="120" optional="show"/>
-                <field name="mep_planned_date" readonly="1"/>
-                <field name="mep_actual_date" readonly="1"/>
-                <field name="comments" readonly="1"/>
+                <field name="mep_planned_date" width="120" readonly="1"/>
+                <field name="mep_actual_date" width="120" optional="show"/>
+                <field name="comments" width="120"/>
             </list>
         </field>
     </record>

@@ -58,13 +58,12 @@ class Project(models.Model):
 
     # Project fields
     project_type = fields.Selection(PROJECT_TYPE_NEXT_STEP_SELECTION, string="Type de projet",
-                                    required=True, tracking=True)
+                                    default='internal', required=True, tracking=True)
     department_type = fields.Selection(DEPARTMENT_TYPE_SELECTION, string="Suivi département",
                                        tracking=True)
     implementation_category = fields.Selection(IMPLEMENTATION_CATEGORY_SELECTION, string="Catégorie implementation", default=False, tracking=True)
     etude_chiffrage_category = fields.Selection(ETUDE_CHIFFRAGE_CATEGORY_SELECTION, string="Catégorie étude/chiffrage", tracking=True)
-    department_ids = fields.Many2many('project.department', string="Département(s)",
-                                      required=True)
+    department_ids = fields.Many2many('project.department', string="Département(s)")
     stage = fields.Selection(STAGE_SELECTION, string="Etape", default='preparation',
                              required=True, tracking=True)
     available_stages = fields.Selection(STAGE_SELECTION, string="Étapes disponibles",
@@ -175,10 +174,6 @@ class Project(models.Model):
     # UI visibility flags
     show_insert_requirements_button = fields.Boolean(string="Afficher le bouton d'insertion des exigences",
                                                      compute="_compute_show_insert_requirements_button")
-    show_insert_requirements_button = fields.Boolean(string="Afficher bouton insertion exigences",
-                                                     compute="_compute_show_insert_requirements_button")
-    show_implementation_project_button = fields.Boolean(string="Afficher bouton projet implémentation",
-                                                        compute="_compute_show_implementation_project_button")
     show_profiles_tab = fields.Boolean(string="Afficher l'onglet Profils", compute="_compute_show_profiles_tab")
     show_requirements_tab = fields.Boolean(string="Afficher l'onglet Exigences",
                                            compute="_compute_show_requirements_tab")
@@ -944,10 +939,6 @@ class Project(models.Model):
                     raise models.ValidationError(
                         "Tous les départements du projet doivent être assignés à un lot avant de passer à l'étape 'Projet'."
                     )
-                if project.implementation_category == 'integration' and (not all(lot.delivery_planned_date for lot in project.lot_ids) or not all(lot.mep_planned_date for lot in project.lot_ids)):
-                    raise models.ValidationError(
-                        "Vous devez spécifier une date de livraison et une date de MEP pour chaque lot avant de passer à l'étape 'Projet'."
-                    )
 
     @api.constrains('stage', 'requires_devis_steps')
     def _check_valid_stages(self):
@@ -1618,7 +1609,7 @@ class Project(models.Model):
         new_project = self.copy({
             'name': formatted_name,
             'project_type': 'implementation',
-            'department_type': 'standard' if implementation_category == 'evolution' else False,
+            'department_type': 'standard',
             'implementation_category': implementation_category,
             'stage': 'preparation',
             'project_created_by': False,

@@ -17,8 +17,10 @@ ETUDE_CHIFFRAGE_CATEGORY_SELECTION = [
 ]
 
 PROJECT_TYPE_NEXT_STEP_SELECTION = [
+    ('internal', 'Interne'),
     ('etude_chiffrage', 'Etude et chiffrage'),
     ('implementation', 'Implémentation'),
+    ('maintenance', 'Maintenance et support'),
 ]
 
 

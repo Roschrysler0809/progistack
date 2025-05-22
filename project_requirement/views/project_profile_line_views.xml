@@ -8,6 +8,7 @@
             <list string="Profils" editable="bottom">
                 <field name="role_id" placeholder="Rôle" required="1"/>
                 <field name="daily_rate" string="Taux journalier" widget="monetary"
+                       groups="project_requirement.group_project_requirement_user_all_project"
                        options="{'currency_field': 'currency_id'}" width="250"/>
                 <field name="involvement" string="Implication" width="150"/>
                 <field name="currency_id" optional="hide"/>
@@ -32,7 +33,8 @@
                         </group>
                         <group>
                             <field name="currency_id" invisible="1"/>
-                            <field name="daily_rate" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="daily_rate" groups="project_requirement.group_project_requirement_user_all_project"
+                                   widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="involvement"/>
                             <field name="involvement_percentage" widget="percentage" readonly="1"/>
                         </group>

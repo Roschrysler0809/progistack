@@ -435,6 +435,23 @@ class ProjectAbstractRequirementLine(models.AbstractModel):
             'flags': {'mode': 'edit'},
         }
 
+    def action_open_form_sous_exigences(self):
+        """Opens the requirement line form view in readonly mode."""
+        self.ensure_one()
+
+        if self.project_stage != 'project':
+            raise UserError(_("Impossible de consulter une ligne d'exigence en dehors de la phase projet."))
+
+        return {
+            'name': _('Consulter la ligne d\'exigence'),
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'readonly_form_view': True},
+        }
+
     @api.model_create_multi
     def create(self, vals_list):
         """
