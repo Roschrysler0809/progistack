@@ -13,17 +13,17 @@
                 <field name="project_id" optional="hide"/>
                 <field name="requirement" readonly="1"/>
                 <field name="subrequirement" readonly="1"/>
-                <field name="department" readonly="1"/>
-                <field name="lot_number" readonly="1"/>
+                <field name="department" readonly="1" optional="show"/>
+                <field name="lot_number" readonly="1" optional="show"/>
                 <!-- Report Information -->
-                <field name="design_implementation_percentage" widget="progressbar" options="{'editable': true}"/>
-                <field name="validation_percentage" widget="progressbar" options="{'editable': true}"/>
-                <field name="integration_percentage" widget="progressbar" options="{'editable': true}"/>
-                <field name="delivery_planned_date" readonly="1" width="120" optional="show"/>
+                <field name="design_implementation_percentage" widget="progressbar" options="{'editable': true}" optional="show"/>
+                <field name="validation_percentage" widget="progressbar" options="{'editable': true}" optional="show"/>
+                <field name="integration_percentage" widget="progressbar" options="{'editable': true}" optional="show"/>
+                <field name="delivery_planned_date"  width="120" optional="show" readonly="1"/>
                 <field name="delivery_actual_date" width="120" optional="show"/>
-                <field name="mep_planned_date" width="120" readonly="1"/>
+                <field name="mep_planned_date" width="120" optional="show" readonly="1"/>
                 <field name="mep_actual_date" width="120" optional="show"/>
-                <field name="comments" width="120"/>
+                <field name="comments" width="120" optional="show"/>
             </list>
         </field>
     </record>
@@ -58,7 +58,7 @@
                             <field name="delivery_actual_date"/>
                         </group>
                         <group>
-                            <field name="mep_planned_date" readonly="1"/>
+                            <field name="mep_planned_date" />
                             <field name="mep_actual_date"/>
                         </group>
                     </group>
@@ -136,4 +136,4 @@
             </p>
         </field>
     </record>
-</odoo> 
+</odoo>

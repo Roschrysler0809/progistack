@@ -454,7 +454,7 @@ class Project(models.Model):
     def _compute_project_state_from_devis(self):
         """
         Monitor the state of the current devis and update project stage accordingly.
-        
+
         This method synchronizes the project state with the state of its current devis:
         - When devis is confirmed (state='sale'): Project moves to 'devis_validated' stage
         - When devis is canceled (state='cancel'): Project reverts to 'devis_created' stage
@@ -607,7 +607,7 @@ class Project(models.Model):
     def _compute_show_requirements_tab(self):
         """
         Determine if the standard requirements tab should be shown based on project type.
-        
+
         For evolution projects, we don't show the standard requirements tab.
         For all other projects, we show it based on the project type's settings.
         """
@@ -696,7 +696,7 @@ class Project(models.Model):
                 # Projects using custom requirements
                 requirement_lines = project.custom_requirement_line_ids
             else:
-                # Other projects use standard requirements  
+                # Other projects use standard requirements
                 requirement_lines = project.requirement_line_ids
 
             # Skip validation if no requirements to validate against
@@ -782,12 +782,14 @@ class Project(models.Model):
             if not project.department_ids:
                 project.all_departments_assigned = False
                 continue
+            # Exclure les départements ayant le code 'transverse'
+            relevant_departments = project.department_ids.filtered(lambda d: d.code != 'transverse')
 
             # Get all departments assigned to lots
             assigned_departments = project.lot_ids.mapped('department_ids')
 
-            # Check if all project departments are in the assigned departments
-            project.all_departments_assigned = all(dept in assigned_departments for dept in project.department_ids)
+            # Check if all relevant project departments are in the assigned departments
+            project.all_departments_assigned = all(dept in assigned_departments for dept in relevant_departments)
 
     @api.depends('project_type', 'implementation_category', 'stage', 'from_crm', 'from_etude_chiffrage')
     def _compute_is_department_type_readonly(self):
@@ -1893,7 +1895,7 @@ class Project(models.Model):
             #     ('department_id', '=', department.id),
             #     ('project_type', '=', 'etude_chiffrage')
             # ]
-            # 
+            #
             # subrequirements = self.env['project.subrequirement'].search(
             #     domain, order='sequence, id'
             # )
@@ -1904,17 +1906,17 @@ class Project(models.Model):
             # for subreq in subrequirements:
             #     subtask_sequence += 1
             #     subtask_name = f"{department.name} - {subreq.description}"
-            # 
+            #
             #     # Calculate end date for subtask, with proper business day handling
             #     # Adjust duration based on workforce factor
             #     subreq_days = subreq.estimated_work_days or 1
             #     adjusted_duration = adjust_duration_by_workforce(subreq_days, workforce_factor)
             #     subtask_end_date = add_working_days(self.date_start, adjusted_duration)
-            # 
+            #
             #     # Convert to datetime with business hours
             #     subtask_start_datetime = datetime_with_business_hour(self.date_start, START_WORK_TIME)
             #     subtask_end_datetime = datetime_with_business_hour(subtask_end_date, END_WORK_TIME)
-            # 
+            #
             #     subtask_vals = {
             #         'name': subtask_name,
             #         'parent_id': task.id,
@@ -1925,7 +1927,7 @@ class Project(models.Model):
             #         'date_deadline': subtask_end_datetime,
             #         'sequence': subtask_sequence,
             #     }
-            # 
+            #
             #     self.env['project.task'].sudo().create(subtask_vals)
 
         # Update project state
@@ -1950,7 +1952,7 @@ class Project(models.Model):
     def _create_implementation_tasks(self):
         """
         Generate project tasks based on requirements for implementation projects.
-        
+
         For projects using custom requirements, tasks are created from custom requirement lines.
         For other projects, tasks are created from standard requirement lines.
         """
@@ -2040,7 +2042,7 @@ class Project(models.Model):
     def _create_task_for_requirement(self, req_line, estimated_work_days, is_custom_requirement=False):
         """
         Create a task for a requirement line or custom requirement line.
-        
+
         Args:
             req_line: The requirement line (regular or custom)
             estimated_work_days: Estimated work days for the task
@@ -2089,14 +2091,14 @@ class Project(models.Model):
         # sorted_subreqs = req_line.subrequirement_line_ids.sorted(
         #     key=lambda sr: (sr.subrequirement_id.sequence, sr.id)
         # )
-        # 
+        #
         # # Track subtask sequence
         # subtask_sequence = 0
-        # 
+        #
         # for subreq_line in sorted_subreqs:
         #     subtask_sequence += 1
         #     subtask_name = f"{department_name} - {subreq_line.subrequirement_id.description}"
-        # 
+        #
         #     # Use the same start and end dates as the requirement for simplicity
         #     subtask_vals = {
         #         'name': subtask_name,
@@ -2195,14 +2197,14 @@ class Project(models.Model):
                              implementation_category=None):
         """
         Format project name according to standardized naming conventions.
-        
+
         Args:
             name: Base project name
             project_type: Type of project ('etude_chiffrage', 'implementation', etc.)
             from_crm: Whether project was created from CRM
             from_etude_chiffrage: Whether project was created from Etude et Chiffrage
             implementation_category: Category for implementation projects ('integration', 'evolution', etc.)
-            
+
         Returns:
             Formatted project name following naming conventions
         """

@@ -20,7 +20,7 @@ class ProjectRequirement(models.Model):
     sequence = fields.Integer(string='Sequence', default=1)
     name = fields.Char(string="Nom", required=True)
     type = fields.Selection(TYPE_SELECTION, string="Type", required=True, default='external')
-    department_id = fields.Many2one('project.department', string="Département", required=True)
+    department_id = fields.Many2one('project.department', string="Département", required=True )
     estimated_work_days = fields.Float(string="Total Charge (Jours)", compute='_compute_estimated_work_days',
                                        readonly=True, store=True)
     subrequirement_ids = fields.One2many('project.subrequirement', 'requirement_id',

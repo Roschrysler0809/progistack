@@ -16,18 +16,18 @@ class ProjectTrackingReportLine(models.Model):
     subrequirement = fields.Char(string='Sous-exigence', readonly=True)
     department = fields.Char(string='Département', readonly=True)
     lot_number = fields.Char(string='Lot', readonly=True)
-    design_implementation_percentage = fields.Float(string='% Conception & Implémentation')
+    design_implementation_percentage = fields.Float(string='% Conception & dev')
     validation_percentage = fields.Float(string='% Validation')
     integration_percentage = fields.Float(string='% Integration')
-    mep_planned_date = fields.Date(string="Date MEP prévue", readonly=True)
+    mep_planned_date = fields.Date(string="Date MEP prévue",readonly=True)
     mep_actual_date = fields.Date(string="Date MEP réelle")
-    delivery_planned_date = fields.Date(string="Date Livraison prévue", readonly=True)
+    delivery_planned_date = fields.Date(string="Date Livraison prévue",readonly=True)
     delivery_actual_date = fields.Date(string="Date Livraison réelle")
     comments = fields.Text(string='Commentaires')
     is_report_sent = fields.Boolean(string="Rapport envoyé", compute="_compute_is_report_sent", store=True)
 
     # Additional fields for referencing the actual requirement/subrequirement
-    requirement_line_id = fields.Many2one('project.requirement.line', string='Ligne d\'exigence', readonly=True, 
+    requirement_line_id = fields.Many2one('project.requirement.line', string='Ligne d\'exigence', readonly=True,
                                           ondelete='cascade'  # Cette option supprimera la ligne de suivi quand l'exigence est supprimée
                                           )
     subrequirement_line_id = fields.Many2one('project.subrequirement.line', string='Ligne de sous-exigence', readonly=True,ondelete="cascade")

@@ -45,74 +45,82 @@ class ProjectDepartmentLot(models.Model):
         """
         Compute departments that are available for selection in this lot:
         - For evolution projects: ONLY include the generic department (plus those already assigned to this lot)
-        - For other projects: include all departments EXCEPT the generic department (plus those already assigned to this lot)
+        - For other projects: include all departments EXCEPT the generic department and 'transverse' department 
+          (plus those already assigned to this lot)
         """
         for lot in self:
             if not lot.project_id or not lot.project_id.department_ids:
-                lot.available_department_ids = False
+                lot.available_department_ids = lot.env['project.department'].browse([])
                 continue
 
-            # Get the generic department 
             generic_department = get_generic_department(self.env)
-
-            # Get all departments assigned to other lots in this project
+            
             other_lots = self.env['project.department.lot'].search([
                 ('project_id', '=', lot.project_id.id),
                 ('id', '!=', lot.id)
             ])
-            assigned_departments = other_lots.mapped('department_ids')
+            assigned_departments_to_other_lots = other_lots.mapped('department_ids')
 
-            # Logic is different based on project type
             if lot.project_id.project_type == 'implementation' and lot.project_id.implementation_category == 'evolution':
                 # For evolution projects, ONLY the generic department is available (plus those already assigned to this lot)
-                if generic_department:
-                    # Always include departments already assigned to this lot (so they can be removed if needed)
-                    lot.available_department_ids = generic_department | lot.department_ids
-                else:
-                    lot.available_department_ids = lot.department_ids
+                # This inherently excludes 'transverse' unless it is the generic or already in the lot.
+                lot.available_department_ids = (generic_department if generic_department else self.env['project.department']) | lot.department_ids
             else:
-                # For all other projects, all project departments EXCEPT the generic one are available
-                project_departments = lot.project_id.department_ids
-                if generic_department:
-                    project_departments = project_departments.filtered(lambda d: d.id != generic_department.id)
+                # For all other projects
+                selectable_departments = lot.project_id.department_ids
 
-                # Available departments are project departments minus those already assigned to other lots
-                # plus those already assigned to this lot (to keep them selectable)
-                lot.available_department_ids = (project_departments - assigned_departments) | lot.department_ids
+                # Exclude generic department
+                if generic_department:
+                    selectable_departments = selectable_departments.filtered(lambda d: d.id != generic_department.id)
+                
+                # Exclude 'transverse' department
+                transverse_department_record = self.env['project.department'].search([('code', '=', 'transverse')], limit=1)
+                if transverse_department_record:
+                    selectable_departments = selectable_departments.filtered(lambda d: d.id != transverse_department_record.id)
+
+                # Available departments are:
+                # (Project's selectable departments (minus generic, minus transverse))
+                # MINUS (Departments assigned to other lots)
+                # UNION (Departments already assigned to this current lot - to allow removal)
+                lot.available_department_ids = (selectable_departments - assigned_departments_to_other_lots) | lot.department_ids
 
     @api.onchange('department_ids')
     def _onchange_department_ids(self):
         """Update available_department_ids when departments are changed in the form view"""
         if not self.project_id:
+            self.available_department_ids = self.env['project.department'].browse([])
             return
 
-        # Get the generic department
         generic_department = get_generic_department(self.env)
+        
+        other_lots_domain = [('project_id', '=', self.project_id.id)]
+        if self._origin and self._origin.id: # Check if the record is already saved
+             other_lots_domain.append(('id', '!=', self._origin.id))
+        other_lots = self.env['project.department.lot'].search(other_lots_domain)
+        assigned_departments_to_other_lots = other_lots.mapped('department_ids')
 
-        # Get departments assigned to other lots
-        other_lots = self.env['project.department.lot'].search([
-            ('project_id', '=', self.project_id.id),
-            ('id', '!=', self._origin.id)  # Important: use _origin.id to exclude self in DB
-        ])
-        assigned_departments = other_lots.mapped('department_ids')
-
-        # Logic is different based on project type
         if self.project_id.project_type == 'implementation' and self.project_id.implementation_category == 'evolution':
             # For evolution projects, ONLY the generic department is available (plus those already assigned to this lot)
-            if generic_department:
-                # Always include departments already assigned to this lot (so they can be removed if needed)
-                self.available_department_ids = generic_department | self.department_ids
-            else:
-                self.available_department_ids = self.department_ids
+            # This inherently excludes 'transverse' unless it is the generic or already in the lot.
+            self.available_department_ids = (generic_department if generic_department else self.env['project.department']) | self.department_ids
         else:
-            # For all other projects, all project departments EXCEPT the generic one are available
-            project_departments = self.project_id.department_ids
-            if generic_department:
-                project_departments = project_departments.filtered(lambda d: d.id != generic_department.id)
+            # For all other projects
+            selectable_departments = self.project_id.department_ids
 
-            # Available departments are project departments minus those already assigned to other lots
-            # plus those already assigned to this lot (to keep them selectable)
-            self.available_department_ids = (project_departments - assigned_departments) | self.department_ids
+            # Exclude generic department
+            if generic_department:
+                selectable_departments = selectable_departments.filtered(lambda d: d.id != generic_department.id)
+            
+            # Exclude 'transverse' department
+            transverse_department_record = self.env['project.department'].search([('code', '=', 'transverse')], limit=1)
+            if transverse_department_record:
+                selectable_departments = selectable_departments.filtered(lambda d: d.id != transverse_department_record.id)
+
+            # Available departments are:
+            # (Project's selectable departments (minus generic, minus transverse))
+            # MINUS (Departments assigned to other lots)
+            # UNION (Departments already assigned to this current lot - to allow removal)
+            self.available_department_ids = (selectable_departments - assigned_departments_to_other_lots) | self.department_ids
 
     @api.constrains('mep_planned_date', 'delivery_planned_date')
     def _check_dates(self):
@@ -121,12 +129,10 @@ class ProjectDepartmentLot(models.Model):
             if not lot.project_id:
                 continue
 
-            # Get project start date
             project_start_date = lot.project_id.date_start
             if not project_start_date:
                 continue
 
-            # Check MEP date
             if lot.mep_planned_date and lot.mep_planned_date < project_start_date:
                 raise ValidationError(
                     _("La date de MEP prévue ({}) pour le {} doit être supérieure à la date de début du projet ({})").format(
@@ -136,7 +142,6 @@ class ProjectDepartmentLot(models.Model):
                     )
                 )
 
-            # Check delivery date
             if lot.delivery_planned_date and lot.delivery_planned_date < project_start_date:
                 raise ValidationError(
                     _("La date de livraison prévue ({}) pour le {} doit être supérieure à la date de début du projet ({})").format(
@@ -150,7 +155,6 @@ class ProjectDepartmentLot(models.Model):
     def _check_department_constraints(self):
         """Constraint method to validate departments immediately when changes are made"""
         for lot in self:
-            # Skip validation for unsaved records to avoid blocking date updates
             if isinstance(lot.id, models.NewId):
                 continue
             lot._validate_departments()
@@ -158,18 +162,15 @@ class ProjectDepartmentLot(models.Model):
     def _validate_departments(self):
         """Validate all departments in the lot"""
         for lot in self:
-            # Skip validation if requested via context or no project_id
             if not lot.project_id or self.env.context.get('skip_department_validation', False):
                 continue
 
-            # Get all departments from other lots in the same project in a single query
             other_lots = self.env['project.department.lot'].search([
                 ('project_id', '=', lot.project_id.id),
                 ('id', '!=', lot.id)
             ])
             other_departments = other_lots.mapped('department_ids')
 
-            # First validation: Check for departments that are not part of the project
             if lot.project_id and lot.project_id.department_ids:
                 invalid_departments = lot.department_ids.filtered(
                     lambda d: d.id not in lot.project_id.department_ids.ids
@@ -178,15 +179,16 @@ class ProjectDepartmentLot(models.Model):
                     dept_names = ', '.join(invalid_departments.mapped('name'))
                     raise UserError(f"Les départements suivants ne sont pas associés au projet : {dept_names}")
 
-            # Second validation: Check for departments already used in other lots
             duplicates = lot.department_ids.filtered(lambda d: d in other_departments)
+            # We don't check for 'transverse' duplicates here specifically, 
+            # as it should ideally not be selectable for multiple lots unless it was the generic one in an evolution project.
+            # The main logic for availability handles the 'transverse' department.
             if duplicates:
-                # Get the lot names for better error message
                 duplicate_lot_names = []
                 for dept in duplicates:
                     lots_with_dept = other_lots.filtered(lambda l: dept in l.department_ids)
-                    for l in lots_with_dept:
-                        duplicate_lot_names.append(f"{dept.name} (dans {l.name})")
+                    for l_item in lots_with_dept: # Renamed l to l_item to avoid conflict with lambda d
+                        duplicate_lot_names.append(f"{dept.name} (dans {l_item.name})")
 
                 message = "Les départements suivants sont déjà utilisés dans d'autres lots :\n"
                 message += "\n".join(duplicate_lot_names)
@@ -202,13 +204,13 @@ class ProjectDepartmentLot(models.Model):
             'res_id': self.id,
             'view_mode': 'form',
             'view_id': self.env.ref('project_requirement.view_project_department_lot_form_popup').id,
-            'target': 'new',  # Open in a popup dialog
+            'target': 'new',
             'context': {
-                'form_view_initial_mode': 'edit',  # Start in edit mode
-                'default_project_id': self.project_id.id,  # Pass the project ID
-                'project_department_ids': self.project_id.department_ids.ids,  # Pass available departments
-                'hide_project_id': True,  # Hide the project field in the form
-                'skip_department_validation': False,  # Ensure validation runs
+                'form_view_initial_mode': 'edit',
+                'default_project_id': self.project_id.id,
+                # 'project_department_ids': self.project_id.department_ids.ids, # This might be overridden by available_department_ids logic
+                'hide_project_id': True,
+                'skip_department_validation': False,
             },
         }
 
@@ -219,22 +221,37 @@ class ProjectDepartmentLot(models.Model):
         if not self.project_id:
             return self.env['project.department']
 
-        # Get all departments assigned to lots in this project
-        assigned_departments = self.env['project.department.lot'].search([
+        assigned_departments_in_project = self.env['project.department.lot'].search([
             ('project_id', '=', self.project_id.id)
         ]).mapped('department_ids')
+        
+        # Also consider filtering out 'transverse' and 'generic' if they should not be listed as "unassigned" for new lots.
+        # For now, follows existing logic of project_id.department_ids - assigned_departments_in_project
+        unassigned = self.project_id.department_ids - assigned_departments_in_project
+        
+        # Further exclude transverse and generic from being suggested as "unassigned"
+        # unless specific project logic (e.g. evolution project for generic) demands it.
+        # This part might need refinement based on how "get_unassigned_departments" is used.
+        # For now, we'll ensure 'transverse' is not in this list.
+        generic_department = get_generic_department(self.env)
+        transverse_department_record = self.env['project.department'].search([('code', '=', 'transverse')], limit=1)
+        
+        departments_to_exclude = self.env['project.department']
+        if transverse_department_record:
+            departments_to_exclude |= transverse_department_record
+        # Depending on usage, you might want to exclude generic_department too, unless it's an evolution project scenario
+        # if generic_department and not (self.project_id.project_type == 'implementation' and self.project_id.implementation_category == 'evolution'):
+        #    departments_to_exclude |= generic_department
 
-        # Return departments that are in the project but not assigned to any lot
-        return self.project_id.department_ids - assigned_departments
+        return unassigned - departments_to_exclude
+
 
     def _get_next_lot_number(self):
         """Get the next lot number for this project"""
-        # Get project_id from context if not in record
         project_id = self.project_id.id if self.project_id else self.env.context.get('default_project_id')
         if not project_id:
             return 1
 
-        # Get the highest lot number for this project
         highest_lot = self.env['project.department.lot'].search([
             ('project_id', '=', project_id)
         ], order='lot_number desc', limit=1)
@@ -251,15 +268,12 @@ class ProjectDepartmentLot(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         """Ensure the lot numbers are assigned correctly when creating new lots"""
-        # For each record being created, set the lot_number if not provided
         for vals in vals_list:
             if 'lot_number' not in vals:
-                # Create a temporary record to get the project_id context
-                temp_record = self.new(vals)
+                temp_record = self.new(vals) # Create a temporary record to get context (like project_id)
                 vals['lot_number'] = temp_record._get_next_lot_number()
         records = super().create(vals_list)
 
-        # After creation, resequence all lots for the affected projects
         projects = records.mapped('project_id')
         for project in projects:
             self._resequence_lots(project)
@@ -269,7 +283,6 @@ class ProjectDepartmentLot(models.Model):
         """When deleting lots, store the projects to resequence after deletion"""
         projects = self.mapped('project_id')
         result = super().unlink()
-        # Resequence the remaining lots for these projects
         for project in projects:
             self._resequence_lots(project)
         return result

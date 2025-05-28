@@ -128,7 +128,7 @@
                         <strong>Informations du projet:</strong>
                         <group name="project_info" class="mt-2">
                             <field name="department_type" readonly="1"/>
-                            <field name="department_ids" widget="many2many_tags" options="{'color_field': 'color'}"
+                            <field name="displayed_department_ids" widget="many2many_tags" options="{'color_field': 'color'}"
                                    readonly="1"/>
                         </group>
                     </div>
@@ -189,9 +189,9 @@
                                    options="{'editable': true}"/>
                             <field name="integration_percentage" widget="progressbar" width="100"
                                    options="{'editable': true}"/>
-                            <field name="delivery_planned_date" readonly="1" width="120" optional="show"/>
+                            <field name="delivery_planned_date"  width="120" optional="show"/>
                             <field name="delivery_actual_date" width="120" optional="show"/>
-                            <field name="mep_planned_date" readonly="1" width="120" optional="show"/>
+                            <field name="mep_planned_date"  width="120" optional="show"/>
                             <field name="mep_actual_date" width="120" optional="show"/>
                             <field name="comments" width="200"/>
                         </list>

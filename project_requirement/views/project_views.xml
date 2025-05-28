@@ -112,7 +112,8 @@
                     <!-- Status bar for projects that require devis steps -->
                     <field name="stage" widget="statusbar" options="{'clickable': '1'}"
                            statusbar_visible="preparation,devis_created,devis_validated,project"
-                           invisible="not requires_devis_steps"/>
+                           invisible="not requires_devis_steps"
+                           readonly="1"/>
                     <!-- Status bar for projects that don't require devis steps -->
                     <field name="stage" widget="statusbar" options="{'clickable': '1'}"
                            statusbar_visible="preparation,project"
